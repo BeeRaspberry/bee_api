@@ -1,10 +1,8 @@
 import os
 import glob
 import json
-from flask_fixtures import FixturesMixin, load_fixtures
+from flask_fixtures import load_fixtures
 from flask_fixtures.loaders import JSONLoader
-from flask import Flask, jsonify, request
-from flask_sqlalchemy import SQLAlchemy
 from bee_api import app, db
 import unittest
 import tempfile
@@ -163,6 +161,12 @@ class BeeWebTestCase(unittest.TestCase):
 
 
     def test_add_hivedata(self):
+        j = {'probes': [{'temperature': 17.0, 'outdoor': False,
+                         'humidity': 22.0, 'sensor': 11},
+                        {'temperature': 16.700000762939453,
+                         'outdoor': False, 'humidity': 34.20000076293945,
+                         'sensor': 22}], 'hive': {'id': 1},
+                        'dateCreated': '2017-12-23 20:47:41.688849'}
         json_data = dict(humidity=10.5, temperature=78.5,
                      hive=dict(id=1))
         rv = self.app.post('/hivedata/',

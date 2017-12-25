@@ -7,6 +7,7 @@ from flask import Flask, jsonify, request
 from flask_restful import Api
 from flask_restless import ProcessingException
 from flask_cors import CORS
+from flask_bcrypt import Bcrypt
 from flask_script import Manager
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.exc import IntegrityError
@@ -34,6 +35,8 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///testing4.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 
 db.init_app(app)
+bcrypt = Bcrypt(app)
+
 migrate = Migrate(app, db)
 manager = Manager(app)
 manager.add_command('db', MigrateCommand)
@@ -220,32 +223,6 @@ def new_locations():
     return jsonify({"message": "Created new Location.",
                     "locations": result.data})
 
-"""
-    country = Country.query.filter_by(name=data['country']['name']).first()
-    if country is None:
-        country = Country(name=data['country']['name'])
-        db.session.add(country)
-
-    if StateProvince.query.filter_by(
-        name=data['name'],
-        abbreviation=data['abbreviation']).first():
-            raise ProcessingException(
-                description='State, {}, already exists'.format(
-                    data['name']), code=409)
-            return
-
-    stateProvince = StateProvince(
-        name = data['name'],
-        abbreviation = data['abbreviation'],
-        country = country
-    )
-    db.session.add(stateProvince)
-    db.session.commit()
-    result = stateProvince_schema.dump(StateProvince.query.get(StateProvince.id))
-    return jsonify({"message": "Created new State/Province.",
-                    "State/Province": result.data})
-"""
-
 
 @app.route('/owners')
 def get_owners():
@@ -262,6 +239,163 @@ def get_owner(pk):
         return jsonify({"message": "Owner could not be found."}), 400
     result = owner_schema.dump(results)
     return jsonify({"owners": result.data})
+
+
+@app.route("/auth/register", methods=["POST"])
+def new_registration():
+    json_data = request.get_json()
+    if not json_data:
+        return jsonify({'message': 'No input data provided'}), 400
+    # Validate and deserialize input
+    data, errors = location_schema.load(json_data)
+    if errors:
+        return jsonify(errors), 422
+
+    owner = Owner.query.filter_by(email=json_data.get('email')).first()
+    if not owner:
+        try:
+            owner = Owner(
+                email=json_data.get('email'),
+                password=json_data.get('password')
+            )
+            db.session.add(owner)
+            db.session.commit()
+                # generate the auth token
+            auth_token = owner.encode_auth_token(owner.id)
+            responseObject = {
+                'status': 'success',
+                'message': 'Successfully registered.',
+                'auth_token': auth_token.decode()
+            }
+            return jsonify(responseObject), 201
+        except Exception as e:
+            responseObject = {
+                'status': 'fail',
+                'message': 'Some error occurred. Please try again.'
+            }
+            return jsonify(responseObject), 401
+    else:
+        responseObject = {
+            'status': 'fail',
+            'message': 'User already exists. Please Log in.',
+        }
+        return jsonify(responseObject), 202
+
+
+@app.route("/auth/login", methods=["POST"])
+def login():
+    # get the post data
+    post_data = request.get_json()
+    try:
+        # fetch the user data
+        owner = Owner.query.filter_by(
+            email=post_data.get('email')
+        ).first()
+        if owner and bcrypt.check_password_hash(
+                owner.password, post_data.get('password')
+        ):
+            auth_token = owner.encode_auth_token(owner.id)
+            if auth_token:
+                responseObject = {
+                    'status': 'success',
+                    'message': 'Successfully logged in.',
+                    'auth_token': auth_token.decode()
+                }
+                return jsonify(responseObject), 200
+        else:
+            responseObject = {
+                'status': 'fail',
+                'message': 'User does not exist.'
+            }
+            return jsonify(responseObject), 404
+    except Exception as e:
+        print(e)
+        responseObject = {
+            'status': 'fail',
+            'message': 'Try again'
+        }
+        return jsonify(responseObject), 500
+
+@app.route("/auth/logout", methods=["POST"])
+def logout():
+    auth_header = request.headers.get('Authorization')
+    if auth_header:
+        auth_token = auth_header.split(" ")[1]
+    else:
+        auth_token = ''
+    if auth_token:
+        resp = Owner.decode_auth_token(auth_token)
+        if not isinstance(resp, str):
+            # mark the token as blacklisted
+            blacklist_token = BlacklistToken(token=auth_token)
+            try:
+                # insert the token
+                db.session.add(blacklist_token)
+                db.session.commit()
+                responseObject = {
+                    'status': 'success',
+                    'message': 'Successfully logged out.'
+                }
+                return jsonify(responseObject), 200
+            except Exception as e:
+                responseObject = {
+                    'status': 'fail',
+                    'message': e
+                }
+                return jsonify(responseObject), 200
+        else:
+            responseObject = {
+                'status': 'fail',
+                'message': resp
+            }
+            return jsonify(responseObject), 401
+    else:
+        responseObject = {
+            'status': 'fail',
+            'message': 'Provide a valid auth token.'
+        }
+        return jsonify(responseObject), 403
+
+
+@app.route("/auth/status")
+def owner_status():
+    auth_header = request.headers.get('Authorization')
+    if auth_header:
+        try:
+            auth_token = auth_header.split(" ")[1]
+        except IndexError:
+            responseObject = {
+                'status': 'fail',
+                'message': 'Bearer token malformed.'
+            }
+            return jsonify(responseObject), 401
+    else:
+        auth_token = ''
+    if auth_token:
+        resp = Owner.decode_auth_token(auth_token)
+        if not isinstance(resp, str):
+            owner = Owner.query.filter_by(id=resp).first()
+            responseObject = {
+                'status': 'success',
+                'data': {
+                    'user_id': owner.id,
+                    'email': owner.email,
+                    'first_name': owner.firstName,
+                    'last_name': owner.lastName,
+                    'registered_on': owner.registered_on
+                }
+            }
+            return jsonify(responseObject), 200
+        responseObject = {
+            'status': 'fail',
+            'message': resp
+        }
+    else:
+        responseObject = {
+            'status': 'fail',
+            'message': 'Provide a valid auth token.'
+        }
+    return jsonify(responseObject), 401
 
 
 @app.route('/hives')
