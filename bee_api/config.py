@@ -6,6 +6,7 @@ SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'app.sqlite')
 
 class BaseConfig:
     SECRET_KEY = os.getenv('SECRET_KEY', 'my_precious')
+    SECRET_TIMEOUT = int(os.getenv('SECRET_TIMEOUT', '900'))
     DEBUG = False
     BCRYPT_LOG_ROUNDS = 13
     SQLALCHEMY_TRACK_MODIFICATIONS = False

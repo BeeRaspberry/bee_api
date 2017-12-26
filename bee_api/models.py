@@ -69,6 +69,7 @@ class Owner(db.Model):
     locationId = db.Column(db.Integer, ForeignKey('location.id'))
     location = db.relationship('Location', backref='owner')
     registeredOn = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    admin = db.Column(db.Boolean, default=False)
 
 
     def __repr__(self):
@@ -80,7 +81,7 @@ class Owner(db.Model):
 #        return address
 
     def __init__(self, email, passwd, firstName, lastName, phoneNumber,
-                 locationId):
+                 locationId, admin):
         self.email = email
         self.passwd = bcrypt.generate_password_hash(
             passwd, app.config.get('BCRYPT_LOG_ROUNDS')
@@ -90,6 +91,7 @@ class Owner(db.Model):
         self.lastName = lastName
         self.phoneNumber = phoneNumber
         self.locationId = locationId
+        self.admin = admin
 
 #    def __init__(self,  **kwargs):
 #        super(Owner, self).__init__(**kwargs)
@@ -102,7 +104,8 @@ class Owner(db.Model):
         """
         try:
             payload = {
-                'exp': datetime.datetime.utcnow() + datetime.timedelta(days=0, seconds=5),
+                'exp': datetime.datetime.utcnow() + datetime.timedelta(days=0,
+                                seconds=app.config.get('SECRET_TIMEOUT')),
                 'iat': datetime.datetime.utcnow(),
                 'sub': user_id
             }

@@ -12,6 +12,7 @@ from flask_script import Manager
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.exc import IntegrityError
 from flask_migrate import Migrate, MigrateCommand
+from flask_jwt import JWT, jwt_required
 from schema import *
 from models import *
 
@@ -28,13 +29,13 @@ app = Flask(__name__)
 app.config.from_pyfile('config.py')
 app.json_encoder = DecJSONEncoder
 
-
 #api = Api(app)
 CORS(app, resources=r'/*')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///testing4.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 app.config['BCRYPT_LOG_ROUNDS'] = 13
 app.config['SECRET_KEY'] = "AVERYLONGSECret"
+app.config['SECRET_TIMEOUT'] = 900
 
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
@@ -56,7 +57,26 @@ hives_schema = HiveSchema(many=True)
 hiveData_schema = HiveDataSchema()
 hiveDatas_schema = HiveDataSchema(many=True)
 
-##### API #####
+def verify(email, password):
+    if not (email and password):
+        return False
+
+    try:
+        owner = Owner.query.filter_by(
+            email=email).first()
+        if owner and bcrypt.check_password_hash(
+            owner.passwd, json_data.get('password')):
+            return owner
+        else:
+            return False
+    except:
+        return False
+
+def identity(payload):
+    user_id = payload['identity']
+    return {"user_id": user_id}
+
+jwt = JWT(app, verify, identity)
 
 def add_country_helper(json_data):
     country = Country(name=json_data['name'],)
@@ -81,7 +101,10 @@ def add_owner_helper(json_data):
         location = json_data.get('locationid')
     else:
         location = None
-
+    if 'admin' in json_data:
+        admin = json_data.get('admin')
+    else:
+        admin = None
     try:
         owner = Owner(
             email=json_data.get('email'),
@@ -89,7 +112,8 @@ def add_owner_helper(json_data):
             firstName=fname,
             lastName=lname,
             phoneNumber=phonenumber,
-            locationId=location
+            locationId=location,
+            admin=admin
         )
         db.session.add(owner)
         db.session.commit()
@@ -127,6 +151,7 @@ def get_country(pk):
 
 
 @app.route("/countries/", methods=["POST"])
+@jwt_required()
 def new_country():
     json_data = request.get_json()
     if not json_data:
@@ -322,10 +347,10 @@ def login():
     try:
         # fetch the user data
         owner = Owner.query.filter_by(
-            email=post_data.get('email')
+            email=json_data.get('email')
         ).first()
         if owner and bcrypt.check_password_hash(
-                owner.passwd, post_data.get('password')
+                owner.passwd, json_data.get('password')
         ):
             auth_token = owner.encode_auth_token(owner.id)
             if auth_token:
