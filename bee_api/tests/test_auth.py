@@ -1,11 +1,5 @@
-import os
-import glob
 import json
-from flask_fixtures import load_fixtures
-from flask_fixtures.loaders import JSONLoader
-from bee_api.jwt.auth import app
 import unittest
-import tempfile
 
 
 class BeeWebTestCase(unittest.TestCase):
