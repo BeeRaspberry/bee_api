@@ -1,28 +1,27 @@
 import datetime
 from flask_sqlalchemy import SQLAlchemy
+from flask_bcrypt import Bcrypt
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import ForeignKey, create_engine
+from bee_api import db, bcrypt, app
 import jwt
-
-#from bee_api import app, bcrypt
 
 #from flask_security import UserMixin, RoleMixin, SQLAlchemyUserDatastore
 
 Base = declarative_base()
-db = SQLAlchemy()
 
 
-def init_app(app):
-    """Initializes Flask app."""
-    db.app = app
-    db.init_app(app)
-    return db
+#def init_app(app):
+#    """Initializes Flask app."""
+#    db.app = app
+#    db.init_app(app)
+#    return db
 
 
 def create_tables(app):
     "Create tables, and return engine in case of further processing."
     engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
-    db.metadata.create_all(engine)
+    app.db.metadata.create_all(engine)
     return engine
 
 
@@ -69,7 +68,7 @@ class Owner(db.Model):
     phoneNumber = db.Column(db.String(20))
     locationId = db.Column(db.Integer, ForeignKey('location.id'))
     location = db.relationship('Location', backref='owner')
-    registeredOn = db.Column(db.DateTime, nullable=False)
+    registeredOn = db.Column(db.DateTime, default=datetime.datetime.utcnow)
 
 
     def __repr__(self):
@@ -80,17 +79,21 @@ class Owner(db.Model):
 #        assert '@' in address
 #        return address
 
-    def __init__(self, email, password, firstName, lastName, phoneNumber,
+    def __init__(self, email, passwd, firstName, lastName, phoneNumber,
                  locationId):
-        self.locationId = locationId
         self.email = email
+        self.passwd = bcrypt.generate_password_hash(
+            passwd, app.config.get('BCRYPT_LOG_ROUNDS')
+        ).decode()
+        self.registered_on = datetime.datetime.now()
         self.firstName = firstName
         self.lastName = lastName
         self.phoneNumber = phoneNumber
-        self.passwd = bcrypt.generate_password_hash(
-            password, app.config.get('BCRYPT_LOG_ROUNDS')
-        ).decode()
-        self.registered_on = datetime.datetime.now()
+        self.locationId = locationId
+
+#    def __init__(self,  **kwargs):
+#        super(Owner, self).__init__(**kwargs)
+#        self.passwd = bcrypt.generate_password_hash(self.passwd).decode()
 
     def encode_auth_token(self, user_id):
         """
@@ -111,7 +114,7 @@ class Owner(db.Model):
         except Exception as e:
             return e
 
-    @staticmethod
+#    @staticmethod
     def decode_auth_token(auth_token):
         """
         Validates the auth token

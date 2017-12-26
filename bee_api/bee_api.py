@@ -13,7 +13,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.exc import IntegrityError
 from flask_migrate import Migrate, MigrateCommand
 from schema import *
-from models import db
+from models import *
 
 
 class DecJSONEncoder(flask.json.JSONEncoder):
@@ -33,8 +33,10 @@ app.json_encoder = DecJSONEncoder
 CORS(app, resources=r'/*')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///testing4.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
+app.config['BCRYPT_LOG_ROUNDS'] = 13
+app.config['SECRET_KEY'] = "AVERYLONGSECret"
 
-db.init_app(app)
+db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
 
 migrate = Migrate(app, db)
@@ -61,6 +63,50 @@ def add_country_helper(json_data):
     db.session.add(country)
     db.session.commit()
     return country
+
+def add_owner_helper(json_data):
+    if 'firstname' in json_data:
+        fname = json_data.get('firstname')
+    else:
+        fname = None
+    if 'lastname' in json_data:
+        lname = json_data.get('lastname')
+    else:
+        lname = None
+    if 'phonenumber' in json_data:
+        phonenumber = json_data.get('phonenumber')
+    else:
+        phonenumber = None
+    if 'locationid' in json_data:
+        location = json_data.get('locationid')
+    else:
+        location = None
+
+    try:
+        owner = Owner(
+            email=json_data.get('email'),
+            passwd=json_data.get('password'),
+            firstName=fname,
+            lastName=lname,
+            phoneNumber=phonenumber,
+            locationId=location
+        )
+        db.session.add(owner)
+        db.session.commit()
+        # generate the auth token
+        auth_token = owner.encode_auth_token(owner.id)
+        responseObject = {
+            'status': 'success',
+            'message': 'Successfully registered.',
+            'auth_token': auth_token.decode()
+        }
+        return jsonify(responseObject), 201
+    except Exception as e:
+        responseObject = {
+            'status': 'fail',
+            'message': 'Some error occurred. Please try again.'
+        }
+        return jsonify(responseObject), 401
 
 
 @app.route('/countries')
@@ -241,39 +287,19 @@ def get_owner(pk):
     return jsonify({"owners": result.data})
 
 
-@app.route("/auth/register", methods=["POST"])
+@app.route("/auth/register/", methods=["POST"])
 def new_registration():
     json_data = request.get_json()
     if not json_data:
         return jsonify({'message': 'No input data provided'}), 400
     # Validate and deserialize input
-    data, errors = location_schema.load(json_data)
+    data, errors = owner_schema.load(json_data)
     if errors:
         return jsonify(errors), 422
 
     owner = Owner.query.filter_by(email=json_data.get('email')).first()
     if not owner:
-        try:
-            owner = Owner(
-                email=json_data.get('email'),
-                password=json_data.get('password')
-            )
-            db.session.add(owner)
-            db.session.commit()
-                # generate the auth token
-            auth_token = owner.encode_auth_token(owner.id)
-            responseObject = {
-                'status': 'success',
-                'message': 'Successfully registered.',
-                'auth_token': auth_token.decode()
-            }
-            return jsonify(responseObject), 201
-        except Exception as e:
-            responseObject = {
-                'status': 'fail',
-                'message': 'Some error occurred. Please try again.'
-            }
-            return jsonify(responseObject), 401
+        return add_owner_helper(json_data)
     else:
         responseObject = {
             'status': 'fail',
@@ -282,17 +308,24 @@ def new_registration():
         return jsonify(responseObject), 202
 
 
-@app.route("/auth/login", methods=["POST"])
+@app.route("/auth/login/", methods=["POST"])
 def login():
     # get the post data
-    post_data = request.get_json()
+    json_data = request.get_json()
+    if not json_data:
+        return jsonify({'message': 'No input data provided'}), 400
+    # Validate and deserialize input
+    data, errors = owner_schema.load(json_data)
+    if errors:
+        return jsonify(errors), 422
+
     try:
         # fetch the user data
         owner = Owner.query.filter_by(
             email=post_data.get('email')
         ).first()
         if owner and bcrypt.check_password_hash(
-                owner.password, post_data.get('password')
+                owner.passwd, post_data.get('password')
         ):
             auth_token = owner.encode_auth_token(owner.id)
             if auth_token:
@@ -316,7 +349,8 @@ def login():
         }
         return jsonify(responseObject), 500
 
-@app.route("/auth/logout", methods=["POST"])
+
+@app.route("/auth/logout/", methods=["POST"])
 def logout():
     auth_header = request.headers.get('Authorization')
     if auth_header:
