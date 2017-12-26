@@ -1,6 +1,6 @@
 import datetime
 from flask_sqlalchemy import SQLAlchemy
-from flask_bcrypt import Bcrypt
+from sqlalchemy.orm import validates, relationship
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import ForeignKey, create_engine
 from bee_api import db, bcrypt, app
@@ -9,14 +9,6 @@ import jwt
 #from flask_security import UserMixin, RoleMixin, SQLAlchemyUserDatastore
 
 Base = declarative_base()
-
-
-#def init_app(app):
-#    """Initializes Flask app."""
-#    db.app = app
-#    db.init_app(app)
-#    return db
-
 
 def create_tables(app):
     "Create tables, and return engine in case of further processing."
@@ -187,4 +179,3 @@ class HiveData(db.Model):
     humidity = db.Column(db.Numeric)
     sensor = db.Column(db.Integer)
     outdoor = db.Column(db.BOOLEAN)
-#    door_open = Column(Boolean, server_default=True)
