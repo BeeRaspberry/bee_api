@@ -10,6 +10,18 @@ from bee_api.api import db, app
 from bee_api.schema import *
 from bee_api.models import Owner, Country, Location, Hive, HiveData, StateProvince
 
+country_schema = CountrySchema()
+countries_schema = CountrySchema(many=True)
+stateProvince_schema = StateProvinceSchema()
+stateProvinces_schema = StateProvinceSchema(many=True)
+location_schema = LocationSchema()
+locations_schema = LocationSchema(many=True)
+owner_schema = OwnerSchema()
+owners_schema = OwnerSchema(many=True)
+hive_schema = HiveSchema()
+hives_schema = HiveSchema(many=True)
+hiveData_schema = HiveDataSchema()
+hiveDatas_schema = HiveDataSchema(many=True)
 
 class DecJSONEncoder(flask.json.JSONEncoder):
     def default(self, obj):
