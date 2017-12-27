@@ -79,6 +79,8 @@ def add_owner_helper(json_data):
         admin = json_data.get('admin')
     else:
         admin = None
+
+    rc = json_data.get('email')
     try:
         owner = Owner(
             email=json_data.get('email'),

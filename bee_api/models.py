@@ -72,8 +72,8 @@ class Owner(db.Model):
 #        assert '@' in address
 #        return address
 
-    def __init__(self, email, passwd, firstName, lastName, phoneNumber,
-                 locationId, admin):
+    def __init__(self, email, passwd, firstName = None, lastName = None,
+                 phoneNumber = None,  locationId = None, admin = False):
         self.email = email
         self.passwd = bcrypt.generate_password_hash(
             passwd, app.config.get('BCRYPT_LOG_ROUNDS')
