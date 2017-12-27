@@ -20,19 +20,6 @@ class DecJSONEncoder(flask.json.JSONEncoder):
         return super(DecJSONEncoder, self).default(obj)
 
 
-country_schema = CountrySchema()
-countries_schema = CountrySchema(many=True)
-stateProvince_schema = StateProvinceSchema()
-stateProvinces_schema = StateProvinceSchema(many=True)
-location_schema = LocationSchema()
-locations_schema = LocationSchema(many=True)
-owner_schema = OwnerSchema()
-owners_schema = OwnerSchema(many=True)
-hive_schema = HiveSchema()
-hives_schema = HiveSchema(many=True)
-hiveData_schema = HiveDataSchema()
-hiveDatas_schema = HiveDataSchema(many=True)
-
 def verify(email, password):
     if not (email and password):
         return False

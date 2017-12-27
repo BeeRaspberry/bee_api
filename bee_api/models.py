@@ -3,7 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import validates, relationship
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import ForeignKey, create_engine
-from bee_api import db, bcrypt, app
+from bee_api.api import bcrypt, app
 import jwt
 
 #from flask_security import UserMixin, RoleMixin, SQLAlchemyUserDatastore
