@@ -15,8 +15,9 @@ from flask_restless import ProcessingException
 from flask_script import Manager
 from sqlalchemy.exc import IntegrityError
 from flask_migrate import Migrate, MigrateCommand
-#from bee_api.schema import *
-from bee_api.models import db
+from bee_api.schema import *
+from flask_bcrypt import Bcrypt
+#from bee_api.models import db
 
 app = Flask(__name__)
 CORS(app, resources=r'/*')
@@ -28,7 +29,7 @@ app_settings = os.getenv(
 app.config.from_object(app_settings)
 
 bcrypt = Bcrypt(app)
-#db = SQLAlchemy(app)
+db = SQLAlchemy(app)
 db.init_app(app)
 migrate = Migrate(app, db)
 manager = Manager(app)

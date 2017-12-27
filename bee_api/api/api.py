@@ -7,7 +7,6 @@ from sqlalchemy.exc import IntegrityError
 from flask_restless import ProcessingException
 from flask_jwt import JWT, jwt_required
 from bee_api.api import db, app
-from flask_bcrypt import Bcrypt
 from bee_api.schema import *
 from bee_api.models import Owner, Country, Location, Hive, HiveData, StateProvince
 
