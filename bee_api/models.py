@@ -78,7 +78,7 @@ class Owner(db.Model):
         self.passwd = bcrypt.generate_password_hash(
             passwd, app.config.get('BCRYPT_LOG_ROUNDS')
         ).decode()
-        self.registered_on = datetime.datetime.now()
+        self.registeredOn = datetime.datetime.now()
         self.firstName = firstName
         self.lastName = lastName
         self.phoneNumber = phoneNumber

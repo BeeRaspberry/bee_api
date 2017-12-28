@@ -6,9 +6,10 @@ from flask import Flask, jsonify, request
 from sqlalchemy.exc import IntegrityError
 from flask_restless import ProcessingException
 from flask_jwt import JWT, jwt_required
-from bee_api.api import db, app
+from bee_api.api import db, app, bcrypt
 from bee_api.schema import *
-from bee_api.models import Owner, Country, Location, Hive, HiveData, StateProvince
+from bee_api.models import Owner, Country, Location, Hive, HiveData,\
+    StateProvince, BlacklistToken
 
 country_schema = CountrySchema()
 countries_schema = CountrySchema(many=True)
@@ -126,7 +127,7 @@ def get_country(pk):
     return jsonify({"countries": result.data})
 
 
-@app.route("/countries/", methods=["POST"])
+@app.route("/countries", methods=["POST"])
 @jwt_required()
 def new_country():
     json_data = request.get_json()
@@ -167,7 +168,7 @@ def get_stateProvince(pk):
     return jsonify({"stateprovinces": result.data})
 
 
-@app.route("/state-provinces/", methods=["POST"])
+@app.route("/state-provinces", methods=["POST"])
 def new_stateprovinces():
     json_data = request.get_json()
     if not json_data:
@@ -222,7 +223,7 @@ def get_location(pk):
     return jsonify({"locations": result.data})
 
 
-@app.route("/locations/", methods=["POST"])
+@app.route("/locations", methods=["POST"])
 def new_locations():
     json_data = request.get_json()
     if not json_data:
@@ -288,7 +289,7 @@ def get_owner(pk):
     return jsonify({"owners": result.data})
 
 
-@app.route("/auth/register/", methods=["POST"])
+@app.route("/auth/register", methods=["POST"])
 def new_registration():
     json_data = request.get_json()
     if not json_data:
@@ -309,7 +310,7 @@ def new_registration():
         return jsonify(responseObject), 202
 
 
-@app.route("/auth/login/", methods=["POST"])
+@app.route("/auth/login", methods=["POST"])
 def login():
     # get the post data
     json_data = request.get_json()
@@ -351,7 +352,7 @@ def login():
         return jsonify(responseObject), 500
 
 
-@app.route("/auth/logout/", methods=["POST"])
+@app.route("/auth/logout", methods=["POST"])
 def logout():
     auth_header = request.headers.get('Authorization')
     if auth_header:
@@ -417,7 +418,7 @@ def owner_status():
                     'email': owner.email,
                     'first_name': owner.firstName,
                     'last_name': owner.lastName,
-                    'registered_on': owner.registered_on
+                    'registered_on': owner.registeredOn
                 }
             }
             return jsonify(responseObject), 200
