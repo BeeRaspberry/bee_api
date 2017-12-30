@@ -7,10 +7,11 @@
 .idea/workspace.xml
 bee_api/.idea/
 bee_api/__pycache__/
+bee_api/app/__pycache__/
 
 bee_api/fixtures/__pycache__/
-bee_api/migrations/__pycache__/
-bee_api/migrations/versions/__pycache__/
+bee_api/migrations_old/__pycache__/
+bee_api/migrations_old/versions/__pycache__/
 
 bee_api/testing_temp.db
 bee_api/tests/__pycache__/

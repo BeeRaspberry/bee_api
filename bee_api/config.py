@@ -11,6 +11,7 @@ class BaseConfig:
     DEBUG = False
     BCRYPT_LOG_ROUNDS = 13
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    JWT_ALGORITHM = os.getenv('ALGORITHM', 'HS256')
 
 
 class DevelopmentConfig(BaseConfig):

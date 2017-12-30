@@ -3,32 +3,34 @@ import glob
 import json
 from flask_fixtures import load_fixtures
 from flask_fixtures.loaders import JSONLoader
-from bee_api.api.api import db, app
-from bee_api.models import Owner
+from bee_api.app.app import db, app
+from bee_api.models import User
 from datetime import datetime
 
 import unittest
 
+os.environ['APP_SETTINGS'] = 'bee_api.config.TestingConfig'
+
 
 class BeeWebTestCase(unittest.TestCase):
-    def create_app(self):
-        app_settings = os.getenv(
-            'APP_SETTINGS',
-            'bee_api.config.TestingConfig'
-        )
-        app.config.from_object(app_settings)
+ #   def create_app(self):
+ #       app_settings = os.getenv(
+ #           'APP_SETTINGS',
+ #           'bee_api.config.TestingConfig'
+ #       )
+ #       app.config.from_object(app_settings)
 
-        fixture_files = os.path.join(
-            os.path.dirname(os.path.realpath(__file__)),
-            '..','fixtures','*json')
+ #       fixture_files = os.path.join(
+ #           os.path.dirname(os.path.realpath(__file__)),
+ #           '..','fixtures','*json')
 
-        with app.app_context():
-            db.create_all()
-            for fixture_file in glob.glob(fixture_files):
-                fixtures = JSONLoader().load(fixture_file)
-                load_fixtures(db, fixtures)
+#        with app.app_context():
+#            db.create_all()
+#            for fixture_file in glob.glob(fixture_files):
+#                fixtures = JSONLoader().load(fixture_file)
+#                load_fixtures(db, fixtures)
 
-        return app
+#        return app
 
     def setUp(self):
         app_settings = os.getenv(
@@ -56,7 +58,8 @@ class BeeWebTestCase(unittest.TestCase):
         with app.app_context():
             db.drop_all()
 #            os.close(self.db_fd)
-#            os.unlink(app.config['DATABASE'])
+#            os.unlink(os.path.join(app.config.basedir,
+#                                   app.config.database_name))
 
 
     def test_get_all_countries(self):
@@ -90,9 +93,9 @@ class BeeWebTestCase(unittest.TestCase):
 
     def test_registered_with_already_registered_user(self):
         """ Test registration with already registered email"""
-        user = Owner(
+        user = User(
             email='joe@gmail.com',
-            passwd='test'
+            password='test'
         )
         db.session.add(user)
         db.session.commit()
@@ -114,9 +117,9 @@ class BeeWebTestCase(unittest.TestCase):
 
     def test_user_status(self):
         """ Test registration with already registered email"""
-        user = Owner(
+        user = User(
             email='joe@gmail.com',
-            passwd='test',
+            password='test',
             firstName = 'Joe',
             lastName = 'Plumber'
         )
@@ -132,6 +135,7 @@ class BeeWebTestCase(unittest.TestCase):
                 content_type='application/json'
             )
             logout_data = json.loads(resp_login.data.decode())
+            lg = User.decode_auth_token(logout_data['auth_token'])
             response = self.app.get(
                 '/auth/status',
                 headers=dict(
@@ -193,9 +197,9 @@ class BeeWebTestCase(unittest.TestCase):
             self.assertEqual(resp_register.status_code, 201)
 
     def test_login_logout_user(self):
-        user = Owner(
+        user = User(
             email='joe@gmail.com',
-            passwd='test'
+            password='test'
         )
         db.session.add(user)
         db.session.commit()
@@ -302,7 +306,6 @@ class BeeWebTestCase(unittest.TestCase):
 
         json_resp = json.loads(rv.data)
 
-
     def test_get_locations(self):
         rv = self.app.get('/locations/1')
         self.assertEqual(rv.status_code, 200)
@@ -311,19 +314,24 @@ class BeeWebTestCase(unittest.TestCase):
         self.assertEqual(json_resp['locations']['id'], 1)
         self.assertEqual(json_resp['locations']['streetAddress'], '123 Main St.')
 
+    def test_no_user(self):
+        rv = self.app.get('/users/111')
+        self.assertEqual(rv.status_code, 400)
+        json_resp = json.loads(rv.data)
+        self.assertEqual(json_resp['message'], 'User could not be found.')
 
-    def test_get_owners(self):
-        rv = self.app.get('/owners/1')
+    def test_get_user(self):
+        rv = self.app.get('/users/1')
         self.assertEqual(rv.status_code, 200)
         json_resp = json.loads(rv.data)
-        self.assertEqual(json_resp['owners']['firstName'], 'Mickey')
-        self.assertEqual(json_resp['owners']['lastName'], 'Mouse')
-        self.assertEqual(json_resp['owners']['email'], 'mm@disney.com')
-        self.assertEqual(json_resp['owners']['location']['city'], 'Boston')
-        self.assertEqual(json_resp['owners']['location']['id'], 1)
-        self.assertEqual(json_resp['owners']['location']['streetAddress'],
+        self.assertEqual(json_resp['users']['firstName'], 'Mickey')
+        self.assertEqual(json_resp['users']['lastName'], 'Mouse')
+        self.assertEqual(json_resp['users']['email'], 'mm@disney.com')
+        self.assertEqual(json_resp['users']['location']['city'], 'Boston')
+        self.assertEqual(json_resp['users']['location']['id'], 1)
+        self.assertEqual(json_resp['users']['location']['streetAddress'],
                          '123 Main St.')
-        self.assertEqual(json_resp['owners']['phoneNumber'],
+        self.assertEqual(json_resp['users']['phoneNumber'],
                          '7812175265')
 
 

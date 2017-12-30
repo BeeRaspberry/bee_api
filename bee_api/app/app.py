@@ -5,11 +5,19 @@ import flask.json
 from flask import Flask, jsonify, request
 from sqlalchemy.exc import IntegrityError
 from flask_restless import ProcessingException
-from flask_jwt import JWT, jwt_required
-from bee_api.api import db, app, bcrypt
+from flask_security import auth_token_required, SQLAlchemyUserDatastore, \
+        Security
+from flask_jwt_extended import JWTManager,jwt_required, create_access_token, \
+    get_jwt_identity
+from bee_api.app import db, app, bcrypt
 from bee_api.schema import *
 from bee_api.models import Owner, Country, Location, Hive, HiveData,\
-    StateProvince, BlacklistToken
+    StateProvince, BlacklistToken, User, Role
+
+
+# Setup Flask-Security
+user_datastore = SQLAlchemyUserDatastore(db, User, Role)
+security = Security(app, user_datastore)
 
 country_schema = CountrySchema()
 countries_schema = CountrySchema(many=True)
@@ -17,12 +25,13 @@ stateProvince_schema = StateProvinceSchema()
 stateProvinces_schema = StateProvinceSchema(many=True)
 location_schema = LocationSchema()
 locations_schema = LocationSchema(many=True)
-owner_schema = OwnerSchema()
-owners_schema = OwnerSchema(many=True)
+user_schema = UserSchema()
+users_schema = UserSchema(many=True)
 hive_schema = HiveSchema()
 hives_schema = HiveSchema(many=True)
 hiveData_schema = HiveDataSchema()
 hiveDatas_schema = HiveDataSchema(many=True)
+
 
 class DecJSONEncoder(flask.json.JSONEncoder):
     def default(self, obj):
@@ -32,26 +41,17 @@ class DecJSONEncoder(flask.json.JSONEncoder):
         return super(DecJSONEncoder, self).default(obj)
 
 
-def verify(email, password):
-    if not (email and password):
-        return False
+jwt = JWTManager(app)
 
-    try:
-        owner = Owner.query.filter_by(
-            email=email).first()
-        if owner and bcrypt.check_password_hash(
-            owner.passwd, json_data.get('password')):
-            return owner
-        else:
-            return False
-    except:
-        return False
+@jwt.user_claims_loader
+def add_claims_to_access_token(user):
+    return {'roles': user.roles}
 
-def identity(payload):
-    user_id = payload['identity']
-    return {"user_id": user_id}
 
-jwt = JWT(app, verify, identity)
+@jwt.user_identity_loader
+def get_identity_for_access_token(user):
+    return user.email
+
 
 def add_country_helper(json_data):
     country = Country(name=json_data['name'],)
@@ -59,7 +59,7 @@ def add_country_helper(json_data):
     db.session.commit()
     return country
 
-def add_owner_helper(json_data):
+def add_user_helper(json_data):
     if 'firstname' in json_data:
         fname = json_data.get('firstname')
     else:
@@ -76,30 +76,29 @@ def add_owner_helper(json_data):
         location = json_data.get('locationid')
     else:
         location = None
-    if 'admin' in json_data:
-        admin = json_data.get('admin')
+    if 'roles' in json_data:
+        roles = json_data.get('roles')
     else:
-        admin = None
+        roles = None
 
-    rc = json_data.get('email')
     try:
-        owner = Owner(
+        user = User(
             email=json_data.get('email'),
-            passwd=json_data.get('password'),
+            password=json_data.get('password'),
             firstName=fname,
             lastName=lname,
             phoneNumber=phonenumber,
             locationId=location,
-            admin=admin
+            roles=roles
         )
-        db.session.add(owner)
+        db.session.add(user)
         db.session.commit()
         # generate the auth token
-        auth_token = owner.encode_auth_token(owner.id)
+        auth_token = user.encode_auth_token()
         responseObject = {
             'status': 'success',
             'message': 'Successfully registered.',
-            'auth_token': auth_token.decode()
+            'auth_token': auth_token
         }
         return jsonify(responseObject), 201
     except Exception as e:
@@ -128,7 +127,7 @@ def get_country(pk):
 
 
 @app.route("/countries", methods=["POST"])
-@jwt_required()
+@jwt_required
 def new_country():
     json_data = request.get_json()
     if not json_data:
@@ -272,21 +271,25 @@ def new_locations():
                     "locations": result.data})
 
 
-@app.route('/owners')
+@app.route('/users')
 def get_owners():
-    results = Owner.query.all()
-    result = owners_schema.dump(results)
-    return jsonify({'owners': result.data})
+    results = User.query.all()
+    result = users_schema.dump(results)
+    return jsonify({'users': result.data})
 
 
-@app.route("/owners/<int:pk>")
+@app.route("/users/<int:pk>")
 def get_owner(pk):
     try:
-        results = Owner.query.get(pk)
+        results = User.query.get(pk)
     except IntegrityError:
-        return jsonify({"message": "Owner could not be found."}), 400
-    result = owner_schema.dump(results)
-    return jsonify({"owners": result.data})
+        return jsonify({"message": "User could not be found."}), 400
+
+    if results is None:
+        return jsonify({"message": "User could not be found."}), 400
+
+    result = user_schema.dump(results)
+    return jsonify({"users": result.data})
 
 
 @app.route("/auth/register", methods=["POST"])
@@ -295,13 +298,13 @@ def new_registration():
     if not json_data:
         return jsonify({'message': 'No input data provided'}), 400
     # Validate and deserialize input
-    data, errors = owner_schema.load(json_data)
+    data, errors = user_schema.load(json_data)
     if errors:
         return jsonify(errors), 422
 
-    owner = Owner.query.filter_by(email=json_data.get('email')).first()
-    if not owner:
-        return add_owner_helper(json_data)
+    user = User.query.filter_by(email=json_data.get('email')).first()
+    if not user:
+        return add_user_helper(json_data)
     else:
         responseObject = {
             'status': 'fail',
@@ -317,24 +320,31 @@ def login():
     if not json_data:
         return jsonify({'message': 'No input data provided'}), 400
     # Validate and deserialize input
-    data, errors = owner_schema.load(json_data)
+    data, errors = user_schema.load(json_data)
     if errors:
         return jsonify(errors), 422
 
+    # We can now pass this complex object directly to the
+    # create_access_token method. This will allow us to access
+    # the properties of this object in the user_claims_loader
+    # function, and get the identity of this object from the
+    # user_identity_loader function.
+ #   access_token = create_access_token(identity=user)
+ #   ret = {'access_token': access_token}
+
     try:
         # fetch the user data
-        owner = Owner.query.filter_by(
+        user = User.query.filter_by(
             email=json_data.get('email')
         ).first()
-        if owner and bcrypt.check_password_hash(
-                owner.passwd, json_data.get('password')
-        ):
-            auth_token = owner.encode_auth_token(owner.id)
-            if auth_token:
+        if user and bcrypt.check_password_hash(user.password,
+                                        json_data.get('password')):
+            access_token = user.encode_auth_token()
+            if access_token:
                 responseObject = {
                     'status': 'success',
                     'message': 'Successfully logged in.',
-                    'auth_token': auth_token.decode()
+                    'auth_token': access_token
                 }
                 return jsonify(responseObject), 200
         else:
@@ -360,7 +370,7 @@ def logout():
     else:
         auth_token = ''
     if auth_token:
-        resp = Owner.decode_auth_token(auth_token)
+        resp = User.decode_auth_token(auth_token)
         if not isinstance(resp, str):
             # mark the token as blacklisted
             blacklist_token = BlacklistToken(token=auth_token)
@@ -394,7 +404,7 @@ def logout():
 
 
 @app.route("/auth/status")
-def owner_status():
+def user_status():
     auth_header = request.headers.get('Authorization')
     if auth_header:
         try:
@@ -408,19 +418,26 @@ def owner_status():
     else:
         auth_token = ''
     if auth_token:
-        resp = Owner.decode_auth_token(auth_token)
+        resp = User.decode_auth_token(auth_token)
         if not isinstance(resp, str):
-            owner = Owner.query.filter_by(id=resp).first()
-            responseObject = {
-                'status': 'success',
-                'data': {
-                    'user_id': owner.id,
-                    'email': owner.email,
-                    'first_name': owner.firstName,
-                    'last_name': owner.lastName,
-                    'registered_on': owner.registeredOn
+            user = User.query.filter_by(id=resp).first()
+            if user is None:
+                responseObject = {
+                    'status': 'fail',
+                    'message': "User doesn't Exist"
                 }
-            }
+                return jsonify(responseObject), 401
+            else:
+                responseObject = {
+                    'status': 'success',
+                    'data': {
+                        'user_id': user.id,
+                        'email': user.email,
+                        'first_name': user.firstName,
+                        'last_name': user.lastName,
+                        'registered_on': user.registeredOn
+                    }
+                }
             return jsonify(responseObject), 200
         responseObject = {
             'status': 'fail',
@@ -506,6 +523,7 @@ def get_hivedata():
 
 
 @app.route("/")
+@auth_token_required
 def get_index():
     return jsonify({"message": "hello"})
 
