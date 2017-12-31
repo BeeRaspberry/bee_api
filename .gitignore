@@ -13,5 +13,5 @@ bee_api/fixtures/__pycache__/
 bee_api/migrations_old/__pycache__/
 bee_api/migrations_old/versions/__pycache__/
 
-bee_api/testing_temp.db
+bee_api/*.db
 bee_api/tests/__pycache__/

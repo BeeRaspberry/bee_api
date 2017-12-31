@@ -4,7 +4,7 @@ import json
 from flask_fixtures import load_fixtures
 from flask_fixtures.loaders import JSONLoader
 from bee_api.app.app import db, app
-from bee_api.models import User
+from bee_api.models import User, Role
 from datetime import datetime
 
 import unittest
@@ -121,7 +121,8 @@ class BeeWebTestCase(unittest.TestCase):
             email='joe@gmail.com',
             password='test',
             firstName = 'Joe',
-            lastName = 'Plumber'
+            lastName = 'Plumber',
+            roles = Role.query.all()
         )
         db.session.add(user)
         db.session.commit()

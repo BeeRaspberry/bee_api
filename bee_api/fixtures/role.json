@@ -1,0 +1,15 @@
+[
+  {
+    "model": "bee_api.models.Role",
+    "records": [
+      {
+        "name": "User",
+        "description": "User Account"
+      },
+      {
+        "name": "Admin",
+        "description": "Administrator Account"
+      }
+    ]
+  }
+]
