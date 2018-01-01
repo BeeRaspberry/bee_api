@@ -13,24 +13,31 @@ os.environ['APP_SETTINGS'] = 'bee_api.config.TestingConfig'
 
 
 class BeeWebTestCase(unittest.TestCase):
- #   def create_app(self):
- #       app_settings = os.getenv(
- #           'APP_SETTINGS',
- #           'bee_api.config.TestingConfig'
- #       )
- #       app.config.from_object(app_settings)
+    def create_user_token(self, account={'email': 'joe@gmail.com',
+                                         'password': 'test'},
+                                roles=['admin']):
+        if 'firstName' in account:
+            firstName = account['firstName']
+        else:
+            firstName = None
 
- #       fixture_files = os.path.join(
- #           os.path.dirname(os.path.realpath(__file__)),
- #           '..','fixtures','*json')
-
-#        with app.app_context():
-#            db.create_all()
-#            for fixture_file in glob.glob(fixture_files):
-#                fixtures = JSONLoader().load(fixture_file)
-#                load_fixtures(db, fixtures)
-
-#        return app
+        user = User(
+            email=account['email'],
+            password=account['password'],
+            firstName=firstName
+        )
+        db.session.add(user)
+        db.session.commit()
+        with self.app:
+            resp_login = self.app.post(
+                '/auth/login',
+                data=json.dumps(dict(
+                    email=account['email'],
+                    password=account['password']
+                )),
+                content_type='application/json'
+            )
+            return resp_login
 
     def setUp(self):
         app_settings = os.getenv(
@@ -95,7 +102,8 @@ class BeeWebTestCase(unittest.TestCase):
         """ Test registration with already registered email"""
         user = User(
             email='joe@gmail.com',
-            password='test'
+            password='test',
+            firstName='Joe'
         )
         db.session.add(user)
         db.session.commit()
@@ -114,43 +122,6 @@ class BeeWebTestCase(unittest.TestCase):
                 data['message'] == 'User already exists. Please Log in.')
             self.assertTrue(response.content_type == 'application/json')
             self.assertEqual(response.status_code, 202)
-
-    def test_user_status(self):
-        """ Test registration with already registered email"""
-        user = User(
-            email='joe@gmail.com',
-            password='test',
-            firstName = 'Joe',
-            lastName = 'Plumber',
-            roles = Role.query.all()
-        )
-        db.session.add(user)
-        db.session.commit()
-        with self.app:
-            resp_login = self.app.post(
-                '/auth/login',
-                data=json.dumps(dict(
-                    email='joe@gmail.com',
-                    password='test'
-                )),
-                content_type='application/json'
-            )
-            logout_data = json.loads(resp_login.data.decode())
-            lg = User.decode_auth_token(logout_data['auth_token'])
-            response = self.app.get(
-                '/auth/status',
-                headers=dict(
-                    Authorization='Bearer ' + logout_data['auth_token']
-                )
-            )
-            data = json.loads(response.data.decode())
-            self.assertTrue(data['status'] == 'success')
-            self.assertTrue(data['data']['email'] == 'joe@gmail.com')
-            self.assertTrue(data['data']['first_name'] == 'Joe')
-            self.assertTrue(data['data']['last_name'] == 'Plumber')
-            self.assertTrue(data['data']['user_id'] == user.id)
-            self.assertTrue(response.content_type == 'application/json')
-            self.assertEqual(response.status_code, 200)
 
     def test_registered_user_min(self):
         """ Test for login of registered-user login """
@@ -198,50 +169,29 @@ class BeeWebTestCase(unittest.TestCase):
             self.assertEqual(resp_register.status_code, 201)
 
     def test_login_logout_user(self):
-        user = User(
-            email='joe@gmail.com',
-            password='test'
-        )
-        db.session.add(user)
-        db.session.commit()
-        with self.app:
-            resp_login = self.app.post(
-                '/auth/login',
-                data=json.dumps(dict(
-                    email='joe@gmail.com',
-                    password='test'
-                )),
-                content_type='application/json'
-            )
-            logout_data = json.loads(resp_login.data.decode())
-            self.assertTrue(logout_data['status'] == 'success')
-            self.assertTrue(logout_data['message'] == 'Successfully logged in.')
-            self.assertTrue(logout_data['auth_token'])
-            self.assertTrue(resp_login.content_type == 'application/json')
-            self.assertEqual(resp_login.status_code, 200)
+        user = {'email': 'joe@gmail.com', 'password': 'test123'}
+        response = self.create_user_token(account=user, roles=['user'])
+        data = json.loads(response.data.decode())
 
-            response = self.app.post(
+        self.assertTrue(data['status'] == 'success')
+        self.assertTrue(data['message'] == 'Successfully logged in.')
+        self.assertTrue(data['auth_token'])
+        self.assertTrue(response.content_type == 'application/json')
+        self.assertEqual(response.status_code, 200)
+
+        response = self.app.post(
                 '/auth/logout',
                 headers=dict(
-                    Authorization='Bearer ' + logout_data['auth_token']
+                    Authorization='Bearer ' + data['auth_token']
                 )
             )
-            data = json.loads(response.data.decode())
-            self.assertTrue(data['status'] == 'success')
-            self.assertTrue(data['message'] == 'Successfully logged out.')
-            response = self.app.post(
-                '/auth/logout',
-                headers=dict(
-                    Authorization='Bearer ' + logout_data['auth_token']
-                )
-            )
-            data = json.loads(response.data.decode())
-            self.assertTrue(data['status'] == 'fail')
-            self.assertTrue(data['message'] ==
-                            'Token blacklisted. Please log in again.')
-
+        self.assertEqual(response.status_code, 401)
 
     def test_get_all_statesprovinces(self):
+        user = {'email': 'joe@gmail.com', 'password': 'test123'}
+        response = self.create_user_token(account=user, roles=['user'])
+        data = json.loads(response.data.decode())
+
         rv = self.app.get('/state-provinces')
         self.assertEqual(rv.status_code, 200)
         json_resp = json.loads(rv.data)
@@ -298,7 +248,14 @@ class BeeWebTestCase(unittest.TestCase):
         self.assertEqual(rv.status_code, 200)
 
     def test_get_all_locations(self):
-        rv = self.app.get('/locations')
+        user = {'email': 'joe@gmail.com', 'password': 'test123'}
+        response = self.create_user_token(account=user, roles=['user'])
+        data = json.loads(response.data.decode())
+
+        rv = self.app.get('/locations',
+                          headers=dict(
+                              Authorization='Bearer ' + data['auth_token'])
+                          )
         self.assertEqual(rv.status_code, 200)
         json_resp = json.loads(rv.data)
         self.assertEqual(json_resp['locations'][0]['city'], 'Boston')
@@ -317,12 +274,21 @@ class BeeWebTestCase(unittest.TestCase):
 
     def test_no_user(self):
         rv = self.app.get('/users/111')
-        self.assertEqual(rv.status_code, 400)
-        json_resp = json.loads(rv.data)
-        self.assertEqual(json_resp['message'], 'User could not be found.')
+        self.assertEqual(rv.status_code, 401)
 
-    def test_get_user(self):
+    def test_get_user_no_admin(self):
         rv = self.app.get('/users/1')
+        self.assertEqual(rv.status_code, 401)
+
+    def test_get_user_no_admin(self):
+        user = {'email': 'joe@gmail.com', 'password': 'test123'}
+        response = self.create_user_token(account=user, roles=['user'])
+        data = json.loads(response.data.decode())
+        rv = self.app.get('/users/1',
+                          headers=dict(
+                              Authorization='Bearer ' + data['auth_token']
+                          )
+                          )
         self.assertEqual(rv.status_code, 200)
         json_resp = json.loads(rv.data)
         self.assertEqual(json_resp['users']['firstName'], 'Mickey')
@@ -337,6 +303,10 @@ class BeeWebTestCase(unittest.TestCase):
 
 
     def test_add_hivedata(self):
+        user = {'email': 'joe@gmail.com', 'password': 'test123'}
+        response = self.create_user_token(account=user, roles=['user'])
+        data = json.loads(response.data.decode())
+
         json_data = dict(probes=[
                             dict(humidity = 10.5, temperature = 78.5,
                             outdoor = False, sensor = 11),
@@ -346,11 +316,25 @@ class BeeWebTestCase(unittest.TestCase):
                             dateCreated=datetime.utcnow().__str__())
         rv = self.app.post('/hivedata/',
                            data = json.dumps(json_data),
-                           content_type='application/json')
+                           content_type='application/json',
+                           headers=dict(
+                               Authorization='Bearer ' + data['auth_token'])
+                           )
         self.assertEqual(rv.status_code, 200)
         json_resp = json.loads(rv.data)
         self.assertEqual(json_resp['message'], 'Updated Hive Data')
 
+
+    def test_index(self):
+        user = {'email': 'joe@gmail.com', 'password': 'test123'}
+        response = self.create_user_token(account=user, roles=['user'])
+        data = json.loads(response.data.decode())
+        rv = self.app.get('/',
+                          headers=dict(
+                              Authorization='Bearer ' + data['auth_token']
+                          )
+                          )
+        self.assertEqual(rv.status_code, 200)
 
 if __name__ == '__main__':
     unittest.main()

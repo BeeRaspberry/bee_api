@@ -206,6 +206,7 @@ def new_stateprovinces():
 
 
 @app.route('/locations')
+@jwt_required
 def get_locations():
     locations = Location.query.all()
     result = locations_schema.dump(locations)
@@ -272,6 +273,7 @@ def new_locations():
 
 
 @app.route('/users')
+@jwt_required
 def get_owners():
     results = User.query.all()
     result = users_schema.dump(results)
@@ -279,7 +281,8 @@ def get_owners():
 
 
 @app.route("/users/<int:pk>")
-def get_owner(pk):
+@jwt_required
+def get_user(pk):
     try:
         results = User.query.get(pk)
     except IntegrityError:
@@ -339,7 +342,8 @@ def login():
         ).first()
         if user and bcrypt.check_password_hash(user.password,
                                         json_data.get('password')):
-            access_token = user.encode_auth_token()
+            access_token = create_access_token(identity=user)
+#            access_token = create_access_token(identity=user)
             if access_token:
                 responseObject = {
                     'status': 'success',
@@ -363,6 +367,7 @@ def login():
 
 
 @app.route("/auth/logout", methods=["POST"])
+@auth_token_required
 def logout():
     auth_header = request.headers.get('Authorization')
     if auth_header:
@@ -403,55 +408,8 @@ def logout():
         return jsonify(responseObject), 403
 
 
-@app.route("/auth/status")
-def user_status():
-    auth_header = request.headers.get('Authorization')
-    if auth_header:
-        try:
-            auth_token = auth_header.split(" ")[1]
-        except IndexError:
-            responseObject = {
-                'status': 'fail',
-                'message': 'Bearer token malformed.'
-            }
-            return jsonify(responseObject), 401
-    else:
-        auth_token = ''
-    if auth_token:
-        resp = User.decode_auth_token(auth_token)
-        if not isinstance(resp, str):
-            user = User.query.filter_by(id=resp).first()
-            if user is None:
-                responseObject = {
-                    'status': 'fail',
-                    'message': "User doesn't Exist"
-                }
-                return jsonify(responseObject), 401
-            else:
-                responseObject = {
-                    'status': 'success',
-                    'data': {
-                        'user_id': user.id,
-                        'email': user.email,
-                        'first_name': user.firstName,
-                        'last_name': user.lastName,
-                        'registered_on': user.registeredOn
-                    }
-                }
-            return jsonify(responseObject), 200
-        responseObject = {
-            'status': 'fail',
-            'message': resp
-        }
-    else:
-        responseObject = {
-            'status': 'fail',
-            'message': 'Provide a valid auth token.'
-        }
-    return jsonify(responseObject), 401
-
-
 @app.route('/hives')
+@jwt_required
 def get_hives():
     results = Hive.query.all()
     result = hives_schema.dump(results)
@@ -459,6 +417,7 @@ def get_hives():
 
 
 @app.route("/hives/<int:pk>")
+@jwt_required
 def get_hive(pk):
     try:
         results = Hive.query.get(pk)
@@ -469,6 +428,7 @@ def get_hive(pk):
 
 
 @app.route("/hivedata/", methods=["POST"])
+@jwt_required
 def new_hivedata():
     json_data = request.get_json()
     if not json_data:
@@ -503,6 +463,7 @@ def new_hivedata():
 
 
 @app.route("/hivedata/<int:pk>")
+@jwt_required
 def get_hivedata_id(pk):
     try:
         results = HiveData.query.get(pk)
@@ -513,6 +474,7 @@ def get_hivedata_id(pk):
 
 
 @app.route("/hivedata")
+@jwt_required
 def get_hivedata():
     try:
         results = HiveData.query.all()
@@ -523,7 +485,7 @@ def get_hivedata():
 
 
 @app.route("/")
-@auth_token_required
+@jwt_required
 def get_index():
     return jsonify({"message": "hello"})
 

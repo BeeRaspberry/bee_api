@@ -76,6 +76,7 @@ class User(db.Model, UserMixin):
                 'exp': datetime.datetime.utcnow() + datetime.timedelta(days=0,
                                 seconds=app.config.get('SECRET_TIMEOUT')),
                 'iat': datetime.datetime.utcnow(),
+                'jti': self.id,
                 'sub': self.id
             }
             return jwt.encode(
