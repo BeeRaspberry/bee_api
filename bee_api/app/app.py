@@ -7,12 +7,12 @@ from sqlalchemy.exc import IntegrityError
 from flask_restless import ProcessingException
 from flask_security import auth_token_required, SQLAlchemyUserDatastore, \
         Security
-from flask_jwt_extended import JWTManager,jwt_required, create_access_token, \
-    get_jwt_identity
+from flask_jwt_extended import JWTManager, jwt_required, create_access_token, \
+    get_jwt_identity, get_jwt_claims
 from bee_api.app import db, app, bcrypt
 from bee_api.schema import *
-from bee_api.models import Owner, Country, Location, Hive, HiveData,\
-    StateProvince, BlacklistToken, User, Role
+from bee_api.models import User, Country, Location, Hive, HiveData,\
+    StateProvince, BlacklistToken, Role
 
 
 # Setup Flask-Security
@@ -45,12 +45,31 @@ jwt = JWTManager(app)
 
 @jwt.user_claims_loader
 def add_claims_to_access_token(user):
-    return {'roles': user.roles}
+    if user.roleId is None:
+        role_name = None
+    else:
+        role = Role.query.get(user.roleId)
+        role_name = role.name
 
+    return {'roles': role_name}
+
+#@jwt.user_loader_callback_loader
+#def user_loader_callback(identity):
+#    user = User.query.get(identity)
+#    if user is None:
+#        return None
+
+#    if user.roleId is None:
+#        role_name = None
+#    else:
+#        role = Role.query.get(user.roleId)
+#        role_name = role.name
+#    return dict(id=identity, roles=role_name)
+#    return user
 
 @jwt.user_identity_loader
 def get_identity_for_access_token(user):
-    return user.email
+    return user.id
 
 
 def add_country_helper(json_data):
@@ -60,26 +79,27 @@ def add_country_helper(json_data):
     return country
 
 def add_user_helper(json_data):
-    if 'firstname' in json_data:
-        fname = json_data.get('firstname')
+    if 'firstName' in json_data:
+        fname = json_data.get('firstName')
     else:
         fname = None
-    if 'lastname' in json_data:
-        lname = json_data.get('lastname')
+    if 'lastName' in json_data:
+        lname = json_data.get('lastName')
     else:
         lname = None
-    if 'phonenumber' in json_data:
-        phonenumber = json_data.get('phonenumber')
+    if 'phoneNumber' in json_data:
+        phonenumber = json_data.get('phoneNumber')
     else:
         phonenumber = None
-    if 'locationid' in json_data:
-        location = json_data.get('locationid')
+    if 'locationId' in json_data:
+        location = json_data.get('locationId')
     else:
         location = None
     if 'roles' in json_data:
-        roles = json_data.get('roles')
+        role = Role.query.filter_by(name=json_data['roles']).first()
+        role_id = role.id
     else:
-        roles = None
+        role_id = None
 
     try:
         user = User(
@@ -89,7 +109,7 @@ def add_user_helper(json_data):
             lastName=lname,
             phoneNumber=phonenumber,
             locationId=location,
-            roles=roles
+            roleId=role_id
         )
         db.session.add(user)
         db.session.commit()
@@ -129,6 +149,11 @@ def get_country(pk):
 @app.route("/countries", methods=["POST"])
 @jwt_required
 def new_country():
+    current_user = get_jwt_claims()
+
+    if 'admin' not in current_user['roles']:
+        return jsonify({'message': 'Forbidden'}), 403
+
     json_data = request.get_json()
     if not json_data:
         return jsonify({'message': 'No input data provided'}), 400
@@ -168,7 +193,13 @@ def get_stateProvince(pk):
 
 
 @app.route("/state-provinces", methods=["POST"])
+@jwt_required
 def new_stateprovinces():
+    current_user = get_jwt_claims()
+
+    if 'admin' not in current_user['roles']:
+        return jsonify({'message': 'Forbidden'}), 403
+
     json_data = request.get_json()
     if not json_data:
         return jsonify({'message': 'No input data provided'}), 400
@@ -208,6 +239,11 @@ def new_stateprovinces():
 @app.route('/locations')
 @jwt_required
 def get_locations():
+    current_user = get_jwt_claims()
+
+    if 'admin' not in current_user['roles']:
+        return jsonify({'message': 'Forbidden'}), 403
+
     locations = Location.query.all()
     result = locations_schema.dump(locations)
     return jsonify({'locations': result.data})
@@ -215,6 +251,11 @@ def get_locations():
 
 @app.route("/locations/<int:pk>")
 def get_location(pk):
+    current_user = get_jwt_claims()
+
+#    if 'admin' not in current_user['roles']:
+#        return jsonify({'message': 'Forbidden'}), 403
+
     try:
         location = Location.query.get(pk)
     except IntegrityError:
@@ -275,6 +316,11 @@ def new_locations():
 @app.route('/users')
 @jwt_required
 def get_owners():
+    current_user = get_jwt_claims()
+
+    if 'admin' not in current_user['roles']:
+        return jsonify({'message': 'Forbidden'}), 403
+
     results = User.query.all()
     result = users_schema.dump(results)
     return jsonify({'users': result.data})
@@ -283,6 +329,12 @@ def get_owners():
 @app.route("/users/<int:pk>")
 @jwt_required
 def get_user(pk):
+    current_claim = get_jwt_claims()
+    current_user = get_jwt_identity()
+    if 'admin' not in current_claim['roles'] and \
+        current_user != pk:
+        return jsonify({'message': 'Forbidden'}), 403
+
     try:
         results = User.query.get(pk)
     except IntegrityError:
@@ -305,7 +357,7 @@ def new_registration():
     if errors:
         return jsonify(errors), 422
 
-    user = User.query.filter_by(email=json_data.get('email')).first()
+    user = User.query.filter_by(email=data.get('email')).first()
     if not user:
         return add_user_helper(json_data)
     else:

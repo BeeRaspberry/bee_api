@@ -3,11 +3,11 @@
     "model": "bee_api.models.Role",
     "records": [
       {
-        "name": "User",
+        "name": "user",
         "description": "User Account"
       },
       {
-        "name": "Admin",
+        "name": "admin",
         "description": "Administrator Account"
       }
     ]

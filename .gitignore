@@ -6,12 +6,8 @@
 .idea/vcs.xml
 .idea/workspace.xml
 bee_api/.idea/
-bee_api/__pycache__/
-bee_api/app/__pycache__/
 
-bee_api/fixtures/__pycache__/
-bee_api/migrations_old/__pycache__/
-bee_api/migrations_old/versions/__pycache__/
+**/__pycache__/
 
 bee_api/*.db
 bee_api/tests/__pycache__/

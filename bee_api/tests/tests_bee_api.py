@@ -15,16 +15,29 @@ os.environ['APP_SETTINGS'] = 'bee_api.config.TestingConfig'
 class BeeWebTestCase(unittest.TestCase):
     def create_user_token(self, account={'email': 'joe@gmail.com',
                                          'password': 'test'},
-                                roles=['admin']):
+                                roles='user'):
         if 'firstName' in account:
             firstName = account['firstName']
         else:
             firstName = None
+        if 'lastName' in account:
+            lastName = account['lastName']
+        else:
+            lastName = None
+        if 'phoneNumber' in account:
+            phoneNumber = account['phoneNumber']
+        else:
+            phoneNumber = None
+
+        role = Role.query.filter_by(name=roles).first()
 
         user = User(
             email=account['email'],
             password=account['password'],
-            firstName=firstName
+            firstName=firstName,
+            lastName=lastName,
+            phoneNumber=phoneNumber,
+            roleId=role.id
         )
         db.session.add(user)
         db.session.commit()
@@ -153,7 +166,7 @@ class BeeWebTestCase(unittest.TestCase):
                     password='123456',
                     firstName='Joe',
                     lastName='Plumber',
-                    admin=True,
+                    roles='admin',
                     locationId=1,
                     phoneNumber="123-235-1111"
                 )),
@@ -170,7 +183,7 @@ class BeeWebTestCase(unittest.TestCase):
 
     def test_login_logout_user(self):
         user = {'email': 'joe@gmail.com', 'password': 'test123'}
-        response = self.create_user_token(account=user, roles=['user'])
+        response = self.create_user_token(account=user)
         data = json.loads(response.data.decode())
 
         self.assertTrue(data['status'] == 'success')
@@ -189,7 +202,7 @@ class BeeWebTestCase(unittest.TestCase):
 
     def test_get_all_statesprovinces(self):
         user = {'email': 'joe@gmail.com', 'password': 'test123'}
-        response = self.create_user_token(account=user, roles=['user'])
+        response = self.create_user_token(account=user)
         data = json.loads(response.data.decode())
 
         rv = self.app.get('/state-provinces')
@@ -218,12 +231,32 @@ class BeeWebTestCase(unittest.TestCase):
         self.assertEqual(json_resp['stateprovinces']['location'][0]
                          ['streetAddress'],'123 Main St.')
 
-    def test_add_stateprovinces(self):
+    def test_add_stateprovinces_no_admin(self):
+        user = {'email': 'joe@gmail.com', 'password': 'test123'}
+        response = self.create_user_token(account=user)
+        data = json.loads(response.data.decode())
         json_data = dict(name="Quebec", abbreviation="QC",
                      country=dict(name="Canada", id=2))
         rv = self.app.post('/state-provinces',
                            data = json.dumps(json_data),
-                           content_type='application/json')
+                           content_type='application/json',
+                           headers=dict(
+                               Authorization='Bearer ' + data['auth_token'])
+                           )
+        self.assertEqual(rv.status_code, 403)
+
+    def test_add_stateprovinces(self):
+        user = {'email': 'joe@gmail.com', 'password': 'test123'}
+        response = self.create_user_token(account=user, roles='admin')
+        data = json.loads(response.data.decode())
+        json_data = dict(name="Quebec", abbreviation="QC",
+                     country=dict(name="Canada", id=2))
+        rv = self.app.post('/state-provinces',
+                           data = json.dumps(json_data),
+                           content_type='application/json',
+                           headers=dict(
+                               Authorization='Bearer ' + data['auth_token'])
+                           )
         self.assertEqual(rv.status_code, 200)
         json_resp = json.loads(rv.data)
         self.assertEqual(json_resp['stateprovinces']['abbreviation'], 'QC')
@@ -236,7 +269,7 @@ class BeeWebTestCase(unittest.TestCase):
         rv = self.app.post('/state-provinces',
                            data = json.dumps(json_data),
                            content_type='application/json')
-        self.assertEqual(rv.status_code, 409)
+        self.assertEqual(rv.status_code, 401)
 
     def test_add_location(self):
         rv = self.app.post('/locations',
@@ -249,7 +282,7 @@ class BeeWebTestCase(unittest.TestCase):
 
     def test_get_all_locations(self):
         user = {'email': 'joe@gmail.com', 'password': 'test123'}
-        response = self.create_user_token(account=user, roles=['user'])
+        response = self.create_user_token(account=user, roles='admin')
         data = json.loads(response.data.decode())
 
         rv = self.app.get('/locations',
@@ -282,7 +315,39 @@ class BeeWebTestCase(unittest.TestCase):
 
     def test_get_user_no_admin(self):
         user = {'email': 'joe@gmail.com', 'password': 'test123'}
-        response = self.create_user_token(account=user, roles=['user'])
+        response = self.create_user_token(account=user)
+        data = json.loads(response.data.decode())
+        rv = self.app.get('/users/1',
+                          headers=dict(
+                              Authorization='Bearer ' + data['auth_token']
+                          )
+                          )
+        self.assertEqual(rv.status_code, 403)
+
+
+    def test_get_user_same_user(self):
+        user = {'email': 'joe@gmail.com', 'password': 'test123',
+                'firstName': 'Joe', 'lastName': 'Plumber',
+                'phoneNumber': '123456789'}
+        response = self.create_user_token(account=user)
+        data = json.loads(response.data.decode())
+        rv = self.app.get('/users/2',
+                          headers=dict(
+                              Authorization='Bearer ' + data['auth_token']
+                          )
+                          )
+        self.assertEqual(rv.status_code, 200)
+        json_resp = json.loads(rv.data)
+        self.assertEqual(json_resp['users']['firstName'], user['firstName'])
+        self.assertEqual(json_resp['users']['lastName'], user['lastName'])
+        self.assertEqual(json_resp['users']['email'], user['email'])
+        self.assertEqual(json_resp['users']['phoneNumber'],
+                         user['phoneNumber'])
+
+
+    def test_get_user_admin(self):
+        user = {'email': 'joe@gmail.com', 'password': 'test123'}
+        response = self.create_user_token(account=user, roles='admin')
         data = json.loads(response.data.decode())
         rv = self.app.get('/users/1',
                           headers=dict(
@@ -304,7 +369,7 @@ class BeeWebTestCase(unittest.TestCase):
 
     def test_add_hivedata(self):
         user = {'email': 'joe@gmail.com', 'password': 'test123'}
-        response = self.create_user_token(account=user, roles=['user'])
+        response = self.create_user_token(account=user)
         data = json.loads(response.data.decode())
 
         json_data = dict(probes=[
@@ -327,7 +392,7 @@ class BeeWebTestCase(unittest.TestCase):
 
     def test_index(self):
         user = {'email': 'joe@gmail.com', 'password': 'test123'}
-        response = self.create_user_token(account=user, roles=['user'])
+        response = self.create_user_token(account=user)
         data = json.loads(response.data.decode())
         rv = self.app.get('/',
                           headers=dict(
