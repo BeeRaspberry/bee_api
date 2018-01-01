@@ -1,13 +1,8 @@
 # Created by .ignore support plugin (hsz.mobi)
-.idea/bee_api.iml
-.idea/dbnavigator.xml
-.idea/misc.xml
-.idea/modules.xml
-.idea/vcs.xml
-.idea/workspace.xml
+.idea/
 bee_api/.idea/
 
 **/__pycache__/
-
+**/migrations/
 bee_api/*.db
 bee_api/tests/__pycache__/
