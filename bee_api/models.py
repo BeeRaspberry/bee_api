@@ -66,8 +66,8 @@ class User(db.Model):
         self.phoneNumber = phoneNumber
         self.locationId = locationId
         self.active = True
-        self.roleId = roleId
-        self.api = api
+ #       self.roleId = roleId
+ #       self.api = api
  #       if roles is None:
  #           roles = []
  #       self.roles = roles
