@@ -5,18 +5,35 @@ import flask.json
 from flask import Flask, jsonify, request
 from sqlalchemy.exc import IntegrityError
 from flask_restless import ProcessingException
+from flask_graphql import GraphQLView
+
 from flask_security import auth_token_required, SQLAlchemyUserDatastore, \
         Security
 from flask_jwt_extended import JWTManager, jwt_required, create_access_token, \
     get_jwt_identity, get_jwt_claims
-from bee_api.app import db, app, bcrypt
-from bee_api.schema import *
-from bee_api.models import User, Country, Location, Hive, HiveData,\
-    StateProvince, BlacklistToken, Role
+from bee_api.schema import schema
+from bee_api.models import db_session
+from bee_api.app import app, db, bcrypt
 
+
+app.add_url_rule(
+    '/graphql',
+    view_func=GraphQLView.as_view(
+        'graphql',
+        schema=schema,
+        graphiql=True # for having the GraphiQL interface
+    )
+)
+
+@app.teardown_appcontext
+def shutdown_session(exception=None):
+    db_session.remove()
+
+if __name__ == '__main__':
+    app.run()
 
 # Setup Flask-Security
-user_datastore = SQLAlchemyUserDatastore(db, User, Role)
+'''user_datastore = SQLAlchemyUserDatastore(db, User, Role)
 security = Security(app, user_datastore)
 
 country_schema = CountrySchema()
@@ -582,5 +599,14 @@ def get_index():
     return jsonify({"message": "hello"})
 
 
+app.add_url_rule(
+    '/graphql',
+    view_func=GraphQLView.as_view(
+        'graphql',
+        schema=schema,
+        graphiql=True # for having the GraphiQL interface
+    )
+)
 if __name__ == '__main__':
    app.run(host='0.0.0.0')
+'''

@@ -1,5 +1,10 @@
-from marshmallow import Schema, fields, ValidationError, pre_load
-#from models import *
+import graphene
+from graphene import relay
+from graphene_sqlalchemy import SQLAlchemyObjectType, \
+    SQLAlchemyConnectionField
+from bee_api.models import db_session, Country as CountryModel,\
+    StateProvince as StateProvinceModel, Location as LocationModel, \
+    Hive as HiveModel, HiveData as HiveDataModel, User as UserModel
 
 
 # Custom validator
@@ -8,61 +13,48 @@ def must_not_be_blank(data):
         raise ValidationError('Data not provided.')
 
 
-class CountrySchema(Schema):
-    stateProvinces = fields.Nested('StateProvinceSchema', many=True,
-                        exclude=('country', ))
-
+class Country(SQLAlchemyObjectType):
     class Meta:
-        fields = ('id', 'name', 'stateProvinces')
+        model = CountryModel
+        interfaces = (relay.Node, )
 
 
-class StateProvinceSchema(Schema):
-    country = fields.Nested(CountrySchema, only=('id', 'name'),
-                            exclude=('stateProvinces', ))
-    location = fields.Nested('LocationSchema', many=True,
-                            exclude=('statesProvince', ))
-
+class StateProvince(SQLAlchemyObjectType):
     class Meta:
-        fields = ('id', 'name', 'abbreviation', 'country',
-                  'location')
+        model = StateProvinceModel
+        interfaces = (relay.Node, )
 
 
-class LocationSchema(Schema):
-    stateProvince = fields.Nested('StateProvinceSchema',
-                        exclude=('location', ))
-
+class Location(SQLAlchemyObjectType):
     class Meta:
-        fields = ('id', 'streetAddress', 'city', 'stateProvince')
+        model = LocationModel
+        interfaces = (relay.Node, )
 
 
-class UserSchema(Schema):
-    location = fields.Nested(LocationSchema)
-    hives = fields.Nested('HiveSchema', many=True,
-                          exclude=('owner', 'hiveData'))
-    fullName = fields.Method("format_name", dump_only=True)
-
+class User(SQLAlchemyObjectType):
     class Meta:
-        fields = ('id', 'firstName', 'lastName', 'email', 'phoneNumber',
-                   'fullName', 'location', 'hives')
-
-    def format_name(self, owner):
-        return "{} {}".format(owner.firstName, owner.lastName)
+        model = UserModel
+        interfaces = (relay.Node, )
 
 
-class HiveSchema(Schema):
-    owner = fields.Nested(UserSchema)
-    location = fields.Nested(LocationSchema)
-    hiveData = fields.Nested('HiveDataSchema', many=True,
-                        exclude=('hive', ))
-
+class Hive(SQLAlchemyObjectType):
     class Meta:
-        fields = ('id', 'hiveData', 'owner', 'location', 'dateCreated',
-                  'lastUpdate')
+        model = HiveModel
+        interfaces = (relay.Node, )
 
-class HiveDataSchema(Schema):
-    hive = fields.Nested(HiveSchema, exclude = ('stateProvinces',))
-    probes = []
 
+class HiveData(SQLAlchemyObjectType):
     class Meta:
-        fields = ('id', 'hive', 'probes', 'dateCreated', 'temperature',
-                  'humidity', 'outdoor', 'sensor')
+        model = HiveDataModel
+        interfaces = (relay.Node, )
+
+
+class Query(graphene.ObjectType):
+    node = relay.Node.Field()
+    all_states_provinces = SQLAlchemyConnectionField(StateProvince)
+    all_locations = SQLAlchemyConnectionField(Location)
+    all_users = SQLAlchemyConnectionField(User)
+    all_hives = SQLAlchemyConnectionField(Hive)
+
+
+schema = graphene.Schema(query=Query)

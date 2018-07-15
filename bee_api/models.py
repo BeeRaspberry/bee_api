@@ -1,13 +1,25 @@
 import datetime
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.orm import validates, relationship
+from sqlalchemy.orm import (validates, relationship,
+                            scoped_session, sessionmaker, backref)
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import ForeignKey, create_engine
+#from sqlalchemy import ForeignKey, create_engine
+from sqlalchemy import *
+
 from bee_api.app import bcrypt, app, db
 import jwt
 from flask_security import UserMixin, RoleMixin
 
+from sqlalchemy.ext.declarative import declarative_base
+
+engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'],
+                       convert_unicode=True)
+db_session = scoped_session(sessionmaker(autocommit=False,
+                                         autoflush=False,
+                                         bind=engine))
+
 Base = declarative_base()
+Base.query = db_session.query_property()
 
 def create_tables(app):
     "Create tables, and return engine in case of further processing."
@@ -21,13 +33,15 @@ roles_users = db.Table('roles_users',
         db.Column('role_id', db.Integer(), db.ForeignKey('role.id')))
 
 
-class Role(db.Model):
+class Role(Base):
+    __tablename__ = 'role'
     id = db.Column(db.Integer(), primary_key=True)
     name = db.Column(db.String(80), unique=True)
     description = db.Column(db.String(255))
 
 
-class User(db.Model):
+class User(Base):
+    __tablename__ = 'user'
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(255), unique=True)
     password = db.Column(db.String(255))
@@ -114,7 +128,7 @@ class User(db.Model):
             return 'Invalid token. Please log in again.'
 
 
-class Country(db.Model):
+class Country(Base):
     __tablename__ = 'country'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(200))
@@ -126,7 +140,7 @@ class Country(db.Model):
         return self.name
 
 
-class StateProvince(db.Model):
+class StateProvince(Base):
     __tablename__ = 'stateProvince'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     countryId = db.Column(db.Integer, ForeignKey('country.id'))
@@ -138,7 +152,7 @@ class StateProvince(db.Model):
         return self.name
 
 
-class Location(db.Model):
+class Location(Base):
     __tablename__ = 'location'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     streetAddress = db.Column(db.String(200))
@@ -147,7 +161,7 @@ class Location(db.Model):
     stateProvince = db.relationship('StateProvince', backref='location')
 
 
-class BlacklistToken(db.Model):
+class BlacklistToken(Base):
     """
     Token Model for storing JWT tokens
     """
@@ -174,7 +188,7 @@ class BlacklistToken(db.Model):
             return False
 
 
-class Hive(db.Model):
+class Hive(Base):
     __tablename__ = "hive"
     id = db.Column(db.Integer, primary_key=True)
     ownerId = db.Column(db.Integer, ForeignKey('user.id'))
@@ -189,7 +203,7 @@ class Hive(db.Model):
 #    door_open = Column(Boolean, server_default=True)
 
 
-class HiveData(db.Model):
+class HiveData(Base):
     __tablename__ = "hiveData"
     id = db.Column(db.Integer, primary_key=True)
     hiveId = db.Column(db.Integer, ForeignKey('hive.id'))
