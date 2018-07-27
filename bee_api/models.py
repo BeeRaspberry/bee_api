@@ -137,6 +137,7 @@ class Location(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     streetAddress = Column(String(200))
     city = Column(String(200))
+    postalCode = Column(String(20))
     stateProvinceId = Column(Integer, ForeignKey('stateProvince.id'))
     stateProvince = relationship('StateProvince', backref='location')
 

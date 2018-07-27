@@ -173,11 +173,11 @@ class HiveData(SQLAlchemyObjectType):
 
 class Query(graphene.ObjectType):
     node = relay.Node.Field()
-    all_states_provinces = SQLAlchemyConnectionField(StateProvince)
+    stateProvinceList = SQLAlchemyConnectionField(StateProvince)
     countryList = SQLAlchemyConnectionField(Country)
-    all_locations = SQLAlchemyConnectionField(Location)
-    all_users = SQLAlchemyConnectionField(User)
-    all_hives = SQLAlchemyConnectionField(Hive)
+    locationList = SQLAlchemyConnectionField(Location)
+    userList = SQLAlchemyConnectionField(User)
+    hivesList = SQLAlchemyConnectionField(Hive)
 
 
 class Mutation(graphene.ObjectType):
