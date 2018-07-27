@@ -1,62 +1,42 @@
 import datetime
-from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.orm import (validates, relationship,
-                            scoped_session, sessionmaker, backref)
-from sqlalchemy.ext.declarative import declarative_base
-#from sqlalchemy import ForeignKey, create_engine
 from sqlalchemy import *
-
-from bee_api.app import bcrypt, app, db
+from sqlalchemy.orm import (relationship, backref)
 import jwt
 from flask_security import UserMixin, RoleMixin
+from bee_api.database import Base
+from bee_api.app import bcrypt, app
 
-from sqlalchemy.ext.declarative import declarative_base
-
-engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'],
-                       convert_unicode=True)
-db_session = scoped_session(sessionmaker(autocommit=False,
-                                         autoflush=False,
-                                         bind=engine))
-
-Base = declarative_base()
-Base.query = db_session.query_property()
-
-def create_tables(app):
-    "Create tables, and return engine in case of further processing."
-    engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
-    app.db.metadata.create_all(engine)
-    return engine
-
-# Define models
-roles_users = db.Table('roles_users',
-        db.Column('user_id', db.Integer(), db.ForeignKey('user.id')),
-        db.Column('role_id', db.Integer(), db.ForeignKey('role.id')))
+#def create_tables(app2):
+#    "Create tables, and return engine in case of further processing."
+#    engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
+#    app.db.metadata.create_all(engine)
+#    return engine
 
 
 class Role(Base):
     __tablename__ = 'role'
-    id = db.Column(db.Integer(), primary_key=True)
-    name = db.Column(db.String(80), unique=True)
-    description = db.Column(db.String(255))
+    id = Column(Integer(), primary_key=True)
+    name = Column(String(80), unique=True)
+    description = Column(String(255))
 
 
 class User(Base):
     __tablename__ = 'user'
-    id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(255), unique=True)
-    password = db.Column(db.String(255))
-#    api = db.Column(db.String(255))
-    firstName = db.Column(db.String(50))
-    lastName = db.Column(db.String(50))
-    phoneNumber = db.Column(db.String(20))
-    locationId = db.Column(db.Integer, ForeignKey('location.id'))
-    location = db.relationship('Location', backref='user')
-    registeredOn = db.Column(db.DateTime, default=datetime.datetime.utcnow)
-    active = db.Column(db.Boolean())
-    confirmed_at = db.Column(db.DateTime())
- #   roleId = db.Column(db.Integer, ForeignKey('role.id'))
- #   role = db.relationship('Role', backref='user')
-#    roles = db.relationship('Role', secondary=roles_users,
+    id = Column(Integer, primary_key=True)
+    email = Column(String(255), unique=True)
+    password = Column(String(255))
+#    api = Column(String(255))
+    firstName = Column(String(50))
+    lastName = Column(String(50))
+    phoneNumber = Column(String(20))
+    locationId = Column(Integer, ForeignKey('location.id'))
+    location = relationship('Location', backref='user')
+    registeredOn = Column(DateTime, default=datetime.datetime.utcnow)
+    active = Column(BOOLEAN())
+    confirmed_at = Column(DateTime())
+ #   roleId = Column(Integer, ForeignKey('role.id'))
+ #   role = relationship('Role', backref='user')
+#    roles = relationship('Role', secondary=roles_users,
 #                            backref=db.backref('users', lazy='dynamic'))
 
     def __repr__(self):
@@ -130,8 +110,8 @@ class User(Base):
 
 class Country(Base):
     __tablename__ = 'country'
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    name = db.Column(db.String(200))
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String(200))
 
     def __init__(self, name):
         self.name = name
@@ -142,11 +122,11 @@ class Country(Base):
 
 class StateProvince(Base):
     __tablename__ = 'stateProvince'
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    countryId = db.Column(db.Integer, ForeignKey('country.id'))
-    country = db.relationship('Country', backref='stateProvinces')
-    name = db.Column(db.String(200))
-    abbreviation = db.Column(db.String(10))
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    countryId = Column(Integer, ForeignKey('country.id'))
+    country = relationship('Country', backref='stateProvinces')
+    name = Column(String(200))
+    abbreviation = Column(String(10))
 
     def __repr__(self):
         return self.name
@@ -154,11 +134,11 @@ class StateProvince(Base):
 
 class Location(Base):
     __tablename__ = 'location'
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    streetAddress = db.Column(db.String(200))
-    city = db.Column(db.String(200))
-    stateProvinceId = db.Column(db.Integer, ForeignKey('stateProvince.id'))
-    stateProvince = db.relationship('StateProvince', backref='location')
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    streetAddress = Column(String(200))
+    city = Column(String(200))
+    stateProvinceId = Column(Integer, ForeignKey('stateProvince.id'))
+    stateProvince = relationship('StateProvince', backref='location')
 
 
 class BlacklistToken(Base):
@@ -167,9 +147,9 @@ class BlacklistToken(Base):
     """
     __tablename__ = 'blacklist_tokens'
 
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    token = db.Column(db.String(500), unique=True, nullable=False)
-    blacklisted_on = db.Column(db.DateTime, nullable=False)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    token = Column(String(500), unique=True, nullable=False)
+    blacklisted_on = Column(DateTime, nullable=False)
 
     def __init__(self, token):
         self.token = token
@@ -190,26 +170,32 @@ class BlacklistToken(Base):
 
 class Hive(Base):
     __tablename__ = "hive"
-    id = db.Column(db.Integer, primary_key=True)
-    ownerId = db.Column(db.Integer, ForeignKey('user.id'))
-    owner = db.relationship('User', backref='hives')
+    id = Column(Integer, primary_key=True)
+    ownerId = Column(Integer, ForeignKey('user.id'))
+    owner = relationship('User', backref='hives')
 # Hive Id equals the local hive id.
-    hiveId = db.Column(db.Integer)
+    hiveId = Column(Integer)
 # Hive location may differ from the location of the bee keeper
-    locationId = db.Column(db.Integer, ForeignKey('location.id'))
-    location = db.relationship('Location', backref='hives')
-    dateCreated = db.Column(db.DateTime, default=datetime.datetime.utcnow)
-    lastUpdate = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    locationId = Column(Integer, ForeignKey('location.id'))
+    location = relationship('Location', backref='hives')
+    dateCreated = Column(DateTime, default=datetime.datetime.utcnow)
+    lastUpdate = Column(DateTime, default=datetime.datetime.utcnow)
 #    door_open = Column(Boolean, server_default=True)
 
 
 class HiveData(Base):
     __tablename__ = "hiveData"
-    id = db.Column(db.Integer, primary_key=True)
-    hiveId = db.Column(db.Integer, ForeignKey('hive.id'))
-    hive = db.relationship('Hive', backref='hiveData')
-    dateCreated = db.Column(db.DateTime, default=datetime.datetime.utcnow)
-    temperature = db.Column(db.Numeric)
-    humidity = db.Column(db.Numeric)
-    sensor = db.Column(db.Integer)
-    outdoor = db.Column(db.BOOLEAN)
+    id = Column(Integer, primary_key=True)
+    hiveId = Column(Integer, ForeignKey('hive.id'))
+    hive = relationship('Hive', backref='hiveData')
+    dateCreated = Column(DateTime, default=datetime.datetime.utcnow)
+    temperature = Column(Numeric)
+    humidity = Column(Numeric)
+    sensor = Column(Integer)
+    outdoor = Column(BOOLEAN)
+
+
+# Define models
+#roles_users = db.Table('roles_users',
+#        Column('user_id', Integer(), db.ForeignKey('user.id')),
+#        Column('role_id', Integer(), db.ForeignKey('role.id')))

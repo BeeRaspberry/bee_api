@@ -1,20 +1,8 @@
-import decimal
-from dateutil import parser
-import flask.json
-
-from flask import Flask, jsonify, request
-from sqlalchemy.exc import IntegrityError
-from flask_restless import ProcessingException
 from flask_graphql import GraphQLView
 
-from flask_security import auth_token_required, SQLAlchemyUserDatastore, \
-        Security
-from flask_jwt_extended import JWTManager, jwt_required, create_access_token, \
-    get_jwt_identity, get_jwt_claims
 from bee_api.schema import schema
-from bee_api.models import db_session
-from bee_api.app import app, db, bcrypt
-
+from bee_api.database import db_session
+from bee_api.app import app
 
 app.add_url_rule(
     '/graphql',
@@ -28,6 +16,7 @@ app.add_url_rule(
 @app.teardown_appcontext
 def shutdown_session(exception=None):
     db_session.remove()
+
 
 if __name__ == '__main__':
     app.run()
