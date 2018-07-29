@@ -16,24 +16,35 @@ def must_not_be_blank(data):
 
 
 def check_country(data):
-    country = db_session.query(CountryModel). \
+# Function expects 'data' to originate from StateProvince call.
+    result = db_session.query(CountryModel). \
         filter_by(name=data['country']).first()
-    if country is None:
-        country = CountryModel(data['country'])
-        db_session.add(country)
+    if result is None:
+        result = CountryModel(**data)
+        db_session.add(result)
         db_session.commit()
-    return country
+    return result
 
 
 def check_state_province(data):
-    state_province = db_session.query(StateProvinceModel). \
+    result = db_session.query(StateProvinceModel). \
         filter_by(name=data['name']).first()
-    if state_province is None:
-        state_province = StateProvinceModel(**data)
-        db_session.add(state_province)
+    if result is None:
+        result = StateProvinceModel(**data)
+        db_session.add(result)
         db_session.commit()
-    return state_province
+    return result
 
+
+def check_location(data):
+    result = db_session.query(LocationModel). \
+        filter_by(street_address=data['street_address'],
+                  city=data['city']).first()
+    if result is None:
+        result = LocationModel(**data)
+        db_session.add(result)
+        db_session.commit()
+    return result
 
 
 class CountryAttribute:
@@ -115,7 +126,8 @@ class CreateStateProvince(graphene.Mutation):
 
     def mutate(self, info, input):
         data = utils.input_to_dictionary(input)
-        country = check_country(data)
+        country_data = {'country': data['country']}
+        country = check_country(country_data)
         StateProvince = check_state_province(data)
 
         return CreateStateProvince(StateProvince=StateProvince)
@@ -147,10 +159,66 @@ class UpdateStateProvince(graphene.Mutation):
         return UpdateStateProvince(StateProvince=StateProvince)
 
 
+class LocationAttribute:
+    street_address = graphene.String(description="Street Address")
+    city = graphene.String(description="City Location")
+    postal_code = graphene.String(description="Zip or Postal Code")
+    street_address = graphene.String(description="Street Address")
+    state_province = graphene.String(description="Name of state, province, ")
+
+
 class Location(SQLAlchemyObjectType):
     class Meta:
         model = LocationModel
         interfaces = (relay.Node, )
+
+
+class CreateLocationInput(graphene.InputObjectType,
+                          LocationAttribute):
+    pass
+
+
+class CreateLocation(graphene.Mutation):
+    Location = graphene.Field(lambda: Location,
+                description="StateProvince created by this mutation.")
+
+    class Arguments:
+        input = CreateLocationInput(required=True)
+
+    def mutate(self, info, input):
+        data = utils.input_to_dictionary(input)
+        state_data = {'name': input['state_province']}
+        state_province = check_state_province(state_data)
+        data['state_province'] = state_province
+        Location = check_location(data)
+
+        return CreateLocation(Location=Location)
+
+
+class UpdateLocationInput(graphene.InputObjectType,
+                          LocationAttribute):
+    id = graphene.ID(required=True,
+                     description="Global Id of the Location.")
+
+
+class UpdateLocation(graphene.Mutation):
+    Location = graphene.Field(lambda: Location,
+                    description="Location updated by this mutation.")
+
+    class Arguments:
+        input = UpdateLocationInput(required=True)
+
+    def mutate(self, info, input):
+        data = utils.input_to_dictionary(input)
+
+        Location = db_session.query(LocationModel).\
+            filter_by(id=data['id'])
+        Location.update(data)
+        db_session.commit()
+        Location = db_session.query(LocationModel).\
+            filter_by(id=data['id']).first()
+
+        return UpdateLocation(Location=Location)
 
 
 class User(SQLAlchemyObjectType):
@@ -185,6 +253,8 @@ class Mutation(graphene.ObjectType):
     updateCountry = UpdateCountry.Field()
     createStateProvince = CreateStateProvince.Field()
     updateStateProvince = UpdateStateProvince.Field()
+    createLocation = CreateLocation.Field()
+    updateLocation = UpdateLocation.Field()
 
 
 schema = graphene.Schema(query=Query, mutation=Mutation)

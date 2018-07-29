@@ -31,3 +31,16 @@ mutation {
     }
   }
 }
+
+mutation {
+  createLocation(input:{
+    streetAddress: "123 Main St."
+    city: "Boston"
+    stateProvince: "Massachusetts"
+    postalCode:"02210"
+  }) {
+    Location {
+      id
+    }
+  }
+}

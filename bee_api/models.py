@@ -135,11 +135,11 @@ class StateProvince(Base):
 class Location(Base):
     __tablename__ = 'location'
     id = Column(Integer, primary_key=True, autoincrement=True)
-    streetAddress = Column(String(200))
+    street_address = Column(String(200))
     city = Column(String(200))
-    postalCode = Column(String(20))
+    postal_code = Column(String(20))
     stateProvinceId = Column(Integer, ForeignKey('stateProvince.id'))
-    stateProvince = relationship('StateProvince', backref='location')
+    state_province = relationship('StateProvince', backref='location')
 
 
 class BlacklistToken(Base):
@@ -179,8 +179,8 @@ class Hive(Base):
 # Hive location may differ from the location of the bee keeper
     locationId = Column(Integer, ForeignKey('location.id'))
     location = relationship('Location', backref='hives')
-    dateCreated = Column(DateTime, default=datetime.datetime.utcnow)
-    lastUpdate = Column(DateTime, default=datetime.datetime.utcnow)
+    date_created = Column(DateTime, default=datetime.datetime.utcnow)
+    last_update = Column(DateTime, default=datetime.datetime.utcnow)
 #    door_open = Column(Boolean, server_default=True)
 
 
@@ -189,7 +189,7 @@ class HiveData(Base):
     id = Column(Integer, primary_key=True)
     hiveId = Column(Integer, ForeignKey('hive.id'))
     hive = relationship('Hive', backref='hiveData')
-    dateCreated = Column(DateTime, default=datetime.datetime.utcnow)
+    date_created = Column(DateTime, default=datetime.datetime.utcnow)
     temperature = Column(Numeric)
     humidity = Column(Numeric)
     sensor = Column(Integer)
