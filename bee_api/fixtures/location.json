@@ -1,6 +1,6 @@
 [
       {
-        "streetAddress": "123 Main St.",
+        "street_address": "123 Main St.",
         "stateProvinceId": 21,
         "city": "Boston"
       }
