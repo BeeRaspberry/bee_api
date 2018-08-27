@@ -13,13 +13,13 @@ logging.basicConfig(
 
 def main():
 
-#    log.info('Insert Country data in database')
-#    with open('fixtures/country.json', 'r') as file:
-#        data = literal_eval(file.read())
-#        for record in data:
-#            country = Country(**record)
-#            db_session.add(country)
-#        db_session.commit()
+    log.info('Insert Country data in database')
+    with open('fixtures/country.json', 'r') as file:
+        data = literal_eval(file.read())
+        for record in data:
+            country = Country(**record)
+            db_session.add(country)
+        db_session.commit()
 
     log.info('Insert State data in database')
     with open('fixtures/state_province.json', 'r') as file:
