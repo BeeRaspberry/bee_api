@@ -1,8 +1,10 @@
+from flask import jsonify
 from flask_graphql import GraphQLView
-
-from bee_api.schema import schema
-from bee_api.database import db_session
+from flask_security \
+    import (login_required, auth_token_required,
+            http_auth_required)
 from bee_api.app import app
+from bee_api.schema import schema
 
 app.add_url_rule(
     '/graphql',
@@ -13,18 +15,27 @@ app.add_url_rule(
     )
 )
 
-@app.teardown_appcontext
-def shutdown_session(exception=None):
-    db_session.remove()
+
+# Routes
+@app.route('/')
+@login_required
+def index():
+    return jsonify({'message': 'Login required'})
 
 
-if __name__ == '__main__':
-    app.run()
+@app.route('/token')
+@auth_token_required
+def token():
+    return jsonify({'message': 'Token required'})
 
-# Setup Flask-Security
-'''user_datastore = SQLAlchemyUserDatastore(db, User, Role)
-security = Security(app, user_datastore)
 
+@app.route('/http')
+@http_auth_required
+def http():
+    return jsonify({'message': 'HTTP required'})
+
+
+'''
 country_schema = CountrySchema()
 countries_schema = CountrySchema(many=True)
 stateProvince_schema = StateProvinceSchema()
@@ -45,9 +56,6 @@ class DecJSONEncoder(flask.json.JSONEncoder):
             # Convert decimal instances to strings.
             return str(obj)
         return super(DecJSONEncoder, self).default(obj)
-
-
-jwt = JWTManager(app)
 
 @jwt.user_claims_loader
 def add_claims_to_access_token(user):
@@ -147,14 +155,14 @@ def add_user_helper(json_data):
         return jsonify(responseObject), 400
 
 
-@app.route('/countries')
+@classes.route('/countries')
 def get_countries():
     results = Country.query.all()
     result = countries_schema.dump(results)
     return jsonify({'countries': result.data})
 
 
-@app.route("/countries/<int:pk>")
+@classes.route("/countries/<int:pk>")
 def get_country(pk):
     try:
         country = Country.query.get(pk)
@@ -164,7 +172,7 @@ def get_country(pk):
     return jsonify({"countries": result.data})
 
 
-@app.route("/countries", methods=["POST"])
+@classes.route("/countries", methods=["POST"])
 @jwt_required
 def new_country():
     current_user = get_jwt_claims()
@@ -192,7 +200,7 @@ def new_country():
                     "Country": result.data})
 
 
-@app.route('/state-provinces')
+@classes.route('/state-provinces')
 def get_stateProvinces():
     stateprovinces = StateProvince.query.all()
     # Serialize the queryset
@@ -200,7 +208,7 @@ def get_stateProvinces():
     return jsonify({'stateprovinces': result.data})
 
 
-@app.route("/state-provinces/<int:pk>")
+@classes.route("/state-provinces/<int:pk>")
 def get_stateProvince(pk):
     try:
         stateProvince = StateProvince.query.get(pk)
@@ -210,7 +218,7 @@ def get_stateProvince(pk):
     return jsonify({"stateprovinces": result.data})
 
 
-@app.route("/state-provinces", methods=["POST"])
+@classes.route("/state-provinces", methods=["POST"])
 @jwt_required
 def new_stateprovinces():
     current_user = get_jwt_claims()
@@ -254,7 +262,7 @@ def new_stateprovinces():
                     "stateprovinces": result.data})
 
 
-@app.route('/locations')
+@classes.route('/locations')
 @jwt_required
 def get_locations():
     current_user = get_jwt_claims()
@@ -267,7 +275,7 @@ def get_locations():
     return jsonify({'locations': result.data})
 
 
-@app.route("/locations/<int:pk>")
+@classes.route("/locations/<int:pk>")
 def get_location(pk):
     current_user = get_jwt_claims()
 
@@ -282,7 +290,7 @@ def get_location(pk):
     return jsonify({"locations": result.data})
 
 
-@app.route("/locations", methods=["POST"])
+@classes.route("/locations", methods=["POST"])
 def new_locations():
     json_data = request.get_json()
     if not json_data:
@@ -331,7 +339,7 @@ def new_locations():
                     "locations": result.data})
 
 
-@app.route('/users')
+@classes.route('/users')
 @jwt_required
 def get_owners():
     current_user = get_jwt_claims()
@@ -344,7 +352,7 @@ def get_owners():
     return jsonify({'users': result.data})
 
 
-@app.route("/users/<int:pk>")
+@classes.route("/users/<int:pk>")
 @jwt_required
 def get_user(pk):
     current_claim = get_jwt_claims()
@@ -365,7 +373,7 @@ def get_user(pk):
     return jsonify({"users": result.data})
 
 
-@app.route("/auth/register", methods=["POST"])
+@classes.route("/auth/register", methods=["POST"])
 def new_registration():
     json_data = request.get_json()
     if not json_data:
@@ -386,7 +394,7 @@ def new_registration():
         return jsonify(responseObject), 202
 
 
-@app.route("/auth/login", methods=["POST"])
+@classes.route("/auth/login", methods=["POST"])
 def login():
     # get the post data
     json_data = request.get_json()
@@ -425,7 +433,7 @@ def login():
         }
         return jsonify(responseObject), 500
 
-@app.route("/auth/api", methods=["POST"])
+@classes.route("/auth/api", methods=["POST"])
 def api_login():
     # get the post data
     json_data = request.get_json()
@@ -464,7 +472,7 @@ def api_login():
         return jsonify(responseObject), 500
 
 
-@app.route("/auth/logout", methods=["POST"])
+@classes.route("/auth/logout", methods=["POST"])
 @auth_token_required
 def logout():
     auth_header = request.headers.get('Authorization')
@@ -506,7 +514,7 @@ def logout():
         return jsonify(responseObject), 403
 
 
-@app.route('/hives')
+@classes.route('/hives')
 @jwt_required
 def get_hives():
     results = Hive.query.all()
@@ -514,7 +522,7 @@ def get_hives():
     return jsonify({'hives': result.data})
 
 
-@app.route("/hives/<int:pk>")
+@classes.route("/hives/<int:pk>")
 @jwt_required
 def get_hive(pk):
     try:
@@ -525,7 +533,7 @@ def get_hive(pk):
     return jsonify({"hives": result.data})
 
 
-@app.route("/hivedata/", methods=["POST"])
+@classes.route("/hivedata/", methods=["POST"])
 @jwt_required
 def new_hivedata():
     json_data = request.get_json()
@@ -560,7 +568,7 @@ def new_hivedata():
     return jsonify({"message": "Updated Hive Data"})
 
 
-@app.route("/hivedata/<int:pk>")
+@classes.route("/hivedata/<int:pk>")
 @jwt_required
 def get_hivedata_id(pk):
     try:
@@ -571,7 +579,7 @@ def get_hivedata_id(pk):
     return jsonify({"hivedata": result.data})
 
 
-@app.route("/hivedata")
+@classes.route("/hivedata")
 @jwt_required
 def get_hivedata():
     try:
@@ -582,13 +590,13 @@ def get_hivedata():
     return jsonify({"hivedata": result.data})
 
 
-@app.route("/")
+@classes.route("/")
 @jwt_required
 def get_index():
     return jsonify({"message": "hello"})
 
 
-app.add_url_rule(
+classes.add_url_rule(
     '/graphql',
     view_func=GraphQLView.as_view(
         'graphql',
@@ -597,5 +605,5 @@ app.add_url_rule(
     )
 )
 if __name__ == '__main__':
-   app.run(host='0.0.0.0')
+   classes.run(host='0.0.0.0')
 '''
