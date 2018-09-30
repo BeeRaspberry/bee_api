@@ -2,7 +2,10 @@ import os
 
 
 class BaseConfig:
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    APP_NAME = os.environ.get('APP_NAME') or 'bee_mine'
     basedir = os.path.abspath(os.path.dirname(__file__))
+
     DATABASE_TYPE = 'sqlite'
     DATABASE_NAME = 'beehive'
     DATABASE_USER = None
@@ -27,14 +30,29 @@ class BaseConfig:
     SECURITY_TOKEN_AUTHENTICATION_KEY = 'auth_token'
     SECURITY_TOKEN_AUTHENTICATION_HEADER = 'Authentication-Token'
     SECURITY_TOKEN_MAX_AGE = 1800
-    SECURITY_TRACKABLE = False
+    SECURITY_TRACKABLE = True
     SECURITY_RECOVERABLE = True
     SECURITY_CONFIRMABLE = False
     SECURITY_REGISTERABLE = False
+    SECURITY_USER_IDENTITY_ATTRIBUTES = 'email'
+    SECURITY_LOGIN_URL = '/login'
 
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
-#    JWT_ALGORITHM = os.getenv('ALGORITHM', 'HS256')
-#    JWT_IDENTITY_CLAIM = os.getenv('ID_CLAIM', 'sub')
+    # Email
+    MAIL_SERVER = os.environ.get('MAIL_SERVER') or 'smtp.sendgrid.net'
+    MAIL_PORT = os.environ.get('MAIL_PORT') or 587
+    MAIL_USE_TLS = os.environ.get('MAIL_USE_TLS') or True
+    MAIL_USE_SSL = os.environ.get('MAIL_USE_SSL') or False
+    MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
+    MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
+    MAIL_DEFAULT_SENDER = os.environ.get('MAIL_DEFAULT_SENDER')
+
+    # Admin account
+    ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD') or 'password'
+    ADMIN_EMAIL = os.environ.get(
+        'ADMIN_EMAIL') or 'billing-admin@example.com'
+    EMAIL_SUBJECT_PREFIX = '[{}]'.format(APP_NAME)
+    EMAIL_SENDER = '{app_name} Admin <{email}>'.format(
+        app_name=APP_NAME, email=MAIL_USERNAME)
 
 
 class DevelopmentConfig(BaseConfig):
