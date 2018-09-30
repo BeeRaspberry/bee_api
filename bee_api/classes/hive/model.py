@@ -9,8 +9,6 @@ class Hive(Base):
     id = Column(Integer, primary_key=True)
     ownerId = Column(Integer, ForeignKey('user.id'))
     owner = relationship('User', backref='hives')
-# Hive Id equals the local hive id.
-    hiveId = Column(Integer)
 # Hive location may differ from the location of the bee keeper
     locationId = Column(Integer, ForeignKey('location.id'))
     location = relationship('Location', backref='hives')
