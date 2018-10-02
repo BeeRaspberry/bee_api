@@ -10,3 +10,8 @@ def input_to_dictionary(input):
             input[key] = from_global_id(input[key])[1]
         dictionary[key] = input[key]
     return dictionary
+
+# Custom validator
+def must_not_be_blank(data):
+    if not data:
+        raise ValidationError('Data not provided.')

@@ -1,6 +1,6 @@
 from ast import literal_eval
-from bee_api.models import Country
-from bee_api.helpers import base
+from bee_api import Country
+from bee_api import base
 import logging
 import sys
 
