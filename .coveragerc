@@ -3,6 +3,8 @@ branch = True
 omit =
     # omit site-packages directory anywhere
     */site-packages/*
+    */config.py
+    */config.sample.py
 include = *.py
 
 [report]
