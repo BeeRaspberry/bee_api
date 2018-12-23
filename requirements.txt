@@ -15,7 +15,7 @@ coverage==4.5.2
 cryptography==2.3.1
 extras==1.0.0
 fixtures==3.0.0
-Flask==0.12.2
+Flask==1.0.2
 Flask-API==0.7.1
 Flask-BabelEx==0.9.3
 Flask-Bcrypt==0.7.1
@@ -44,13 +44,13 @@ graphql-relay==0.4.5
 graphql-server-core==1.1.1
 idna==2.7
 itsdangerous==0.24
-Jinja2==2.9.6
+Jinja2==2.10
 jsonschema==2.6.0
 jwt==0.5.4
 linecache2==1.0.0
 Mako==1.0.7
 MarkupSafe==1.1.0
-marshmallow==2.13.1
+marshmallow==2.16.3
 marshmallow-jsonapi==0.14.0
 mimerender==0.6.0
 more-itertools==4.3.0
