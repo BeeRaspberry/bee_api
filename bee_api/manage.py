@@ -71,6 +71,8 @@ def create_db():
     from sqlalchemy_utils import (database_exists, create_database)
     if not database_exists(engine.url):
         create_database(engine.url)
+    else:
+        print("Database already exists")
 
 
 @manager.command
