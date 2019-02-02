@@ -9,6 +9,7 @@ from classes.state_province.schema \
     import (StateProvince, CreateStateProvince,  UpdateStateProvince)
 from classes.location.schema\
     import Location, CreateLocation, UpdateLocation
+from classes.auth.schema import Auth, CheckAuth
 
 
 class Query(graphene.ObjectType):
@@ -27,6 +28,7 @@ class Mutation(graphene.ObjectType):
     updateStateProvince = UpdateStateProvince.Field()
     createLocation = CreateLocation.Field()
     updateLocation = UpdateLocation.Field()
+    checkAuth = CheckAuth.Field()
 
 
 schema = graphene.Schema(query=Query, mutation=Mutation)
