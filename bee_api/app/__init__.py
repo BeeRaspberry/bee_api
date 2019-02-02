@@ -4,9 +4,11 @@ from flask_cors import CORS
 from flask_restful import Api
 from flask import Flask
 from flask_security import (Security, SQLAlchemyUserDatastore)
+from flask_wtf.csrf import CSRFProtect
 
 app = Flask(__name__)
 CORS(app)
+csrf = CSRFProtect(app)
 
 app_settings = os.getenv(
     'APP_SETTINGS',

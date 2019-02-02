@@ -4,7 +4,6 @@ from werkzeug import secure_filename
 
 from flask_security import (login_required, auth_token_required,
                             login_user, logout_user, http_auth_required)
-from flask_login import (login_manager)
 from app import (app, api)
 from schema import schema
 from classes.user.resource import (UserListResource, UserResource,
@@ -31,6 +30,12 @@ def index():
 @login_required
 def logout():
     logout_user()
+    return jsonify({'message': 'Logged Out'})
+
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    login_user()
     return jsonify({'message': 'Logged Out'})
 
 
