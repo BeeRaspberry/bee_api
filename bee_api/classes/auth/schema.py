@@ -38,5 +38,4 @@ class CheckAuth(graphene.Mutation):
         user = UserModel()
         user.email = data['email']
         user.password = data['password']
-        methodList = [method for method in dir(UserModel) if callable(getattr(UserModel, method))]
         return CheckAuth(Auth=Auth)

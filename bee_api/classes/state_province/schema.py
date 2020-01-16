@@ -48,7 +48,6 @@ class CreateStateProvince(graphene.Mutation):
 
     def mutate(self, info, input_value):
         data = utils.input_to_dictionary(input_value)
-        country = check_country({'country': data['country']})
 
         return CreateStateProvince(StateProvince=check_state_province(data))
 
