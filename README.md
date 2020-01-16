@@ -33,11 +33,7 @@ python manage.py db upgrade
 #### Seeding
 The process leverages JSON files located in the `fixtures` directory. The file name corresponds with the table it updates. For instance `country.json` updates the `country` table.
 
-
 After updating the files run
 ```bash
 python manage.py seed
 ``` 
-
-
-

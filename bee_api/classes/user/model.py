@@ -1,5 +1,6 @@
 import datetime
-from sqlalchemy import *
+from sqlalchemy import (Column, Integer, ForeignKey, DateTime, String,
+                        BOOLEAN)
 from sqlalchemy.orm import (relationship, backref)
 from flask_security import (UserMixin, RoleMixin)
 from database import Base

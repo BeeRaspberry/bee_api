@@ -1,5 +1,6 @@
 import datetime
-from sqlalchemy import *
+from sqlalchemy import (Column, Integer, ForeignKey, DateTime, Numeric,
+                        BOOLEAN)
 from sqlalchemy.orm import (relationship)
 from database import Base
 
