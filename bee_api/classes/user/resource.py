@@ -120,12 +120,12 @@ class RoleResource(Resource):
     method_decorators = [login_required]
 
     @marshal_with(role_fields)
-    def get(self, id):
+    def get(self, id_value):
         if 'Administrator' in current_user.roles:
-            role = db.session.query(Role).filter(Role.id == id).first()
+            role = db.session.query(Role).filter(Role.id == id_value).first()
             if role:
                 return role
-            abort(404, message="Role {} doesn't exist".format(id))
+            abort(404, message="Role {} doesn't exist".format(id_value))
         abort(403, message="Account doesn't have access")
 
     def delete(self, id):
@@ -137,10 +137,10 @@ class RoleResource(Resource):
         return {}, 204
 
     @marshal_with(role_fields)
-    def put(self, id):
+    def put(self, id_value):
         if 'Administrator' in current_user.roles:
             parsed_args = role_parse.parse_args()
-            role = db.session.query(Role).filter(Role.id == id).first()
+            role = db.session.query(Role).filter(Role.id == id_value).first()
             if role:
                 role.name = parsed_args['name']
                 role.description = parsed_args['description']

@@ -74,14 +74,6 @@ def test_new_country(new_country):
     assert new_country.name == 'Great Britain'
 
 
-@pytest.fixture(scope='module')
-@pytest.mark.usefixtures('new_state_province')
-def new_location(new_state_province):
-    return Location(street_address='123 Main St.', city='Somewhere',
-                        postal_code='01234',
-                        state_province=new_state_province)
-
-
 @pytest.mark.usefixtures('new_location', 'new_state_province')
 def test_new_location(new_location, new_state_province):
     assert new_location.state_province == new_state_province
