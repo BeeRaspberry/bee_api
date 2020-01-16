@@ -34,12 +34,10 @@ class CheckAuth(graphene.Mutation):
     class Arguments:
         input = CheckAuthInput(required=True)
 
-    def mutate(self, info, input):
-        data = utils.input_to_dictionary(input)
+    def mutate(self, info, input_value):
+        data = utils.input_to_dictionary(input_value)
         user = UserModel()
         user.email = data['email']
         user.password = data['password']
-        id = user.get_id
         methodList = [method for method in dir(UserModel) if callable(getattr(UserModel, method))]
-        print(methodList)
         return CheckAuth(Auth=Auth)

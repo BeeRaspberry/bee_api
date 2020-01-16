@@ -46,12 +46,11 @@ class CreateStateProvince(graphene.Mutation):
     class Arguments:
         input = CreateStateProvinceInput(required=True)
 
-    def mutate(self, info, input):
-        data = utils.input_to_dictionary(input)
+    def mutate(self, info, input_value):
+        data = utils.input_to_dictionary(input_value)
         country = check_country({'country': data['country']})
-        StateProvince = check_state_province(data)
 
-        return CreateStateProvince(StateProvince=StateProvince)
+        return CreateStateProvince(StateProvince=check_state_province(data))
 
 
 class UpdateStateProvinceInput(graphene.InputObjectType,
@@ -67,17 +66,17 @@ class UpdateStateProvince(graphene.Mutation):
     class Arguments:
         input = UpdateStateProvinceInput(required=True)
 
-    def mutate(self, info, input):
-        data = utils.input_to_dictionary(input)
+    def mutate(self, info, input_value):
+        data = utils.input_to_dictionary(input_value)
 
-        StateProvince = db.session.query(StateProvinceModel).\
+        state_province = db.session.query(StateProvinceModel).\
             filter_by(id=data['id'])
-        StateProvince.update(data)
+        state_province.update(data)
         db.session.commit()
-        StateProvince = db.session.query(StateProvinceModel).\
+        state_province = db.session.query(StateProvinceModel).\
             filter_by(id=data['id']).first()
 
-        return UpdateStateProvince(StateProvince=StateProvince)
+        return UpdateStateProvince(StateProvince=state_province)
 
 
 class DeleteStateProvince(graphene.Mutation):
@@ -86,8 +85,8 @@ class DeleteStateProvince(graphene.Mutation):
     class Arguments:
         input = UpdateStateProvinceInput(required=True)
 
-    def mutate(self, info, input):
-        data = utils.input_to_dictionary(input)
+    def mutate(self, info, input_value):
+        data = utils.input_to_dictionary(input_value)
 
         province = db.session.query(StateProvinceModel).filter_by(id=data['id'])
         province.delete()
