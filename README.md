@@ -29,7 +29,7 @@ target_metadata = models.Base.metadata # And this line
 ### Database Commands
 #### Migrations
 The usual statements
-```
+```bash
 python manage.py db init
 python manage.py db migrate
 python manage.py db upgrade

@@ -3,7 +3,6 @@ from helpers import utils
 from graphene_sqlalchemy import SQLAlchemyObjectType
 from graphene import relay
 from classes.user.model import User as UserModel
-from app import db
 
 __all__ = ['Auth', 'AuthAttribute', 'CheckAuth', 'CheckAuthInput']
 
