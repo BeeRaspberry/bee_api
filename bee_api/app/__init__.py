@@ -41,6 +41,7 @@ security = Security(app, user_datastore,
                     login_form=UserLoginForm)
 import routes
 
+
 @app.teardown_appcontext
 def shutdown_session(exception=None):
     db.session.remove()
