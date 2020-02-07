@@ -1,7 +1,8 @@
 flask
 flask-migrate
 flask-graphql
-flask-cors
+Flask-Cors
+Flask-Security
 urllib3
 sqlalchemy
 graphene
