@@ -1,17 +1,22 @@
-FROM tiangolo/uwsgi-nginx-flask:python3.7
+FROM python:3.8-alpine
 
-COPY app /app/app/
-COPY ./bee_api/classes /app/classes/
-COPY ./bee_api/fixtures /app/fixtures/
-COPY ./bee_api/helpers /app/helpers
-COPY ./bee_api/migrations /app/migrations/
-COPY ./bee_api/config.py /app/config.py
-COPY ./bee_api/database.py /app/database.py
-COPY ./bee_api/manage.py /app/manage.py
-COPY ./bee_api/routes.py /app/routes.py
-COPY run.py /app/run.py
-COPY ./bee_api/schema.py /app/schema.py
-COPY ./bee_api/uwsgi.ini /app/uwsgi.ini
-COPY ./bee_api/requirements.txt /app/requirements.txt
+COPY ./requirements.txt /app/requirements.txt
+COPY migrations /app/migrations
+COPY ./app /app/app
+COPY ./seed /app/seed
+COPY ./config-sample /app/config.py
+COPY ./helpers /app/helpers
+COPY ./run.py /app/run.py
+COPY entrypoint.sh /app/entrypoint
+RUN sed -e "s/\r//g" /app/entrypoint > /app/entrypoint.sh
+RUN chmod u+x /app/entrypoint.sh
 
-RUN pip install -r /app/requirements.txt
+WORKDIR /app
+
+ENV FLASK_APP=run.py
+
+RUN apk update && apk add postgresql-dev gcc sqlite python3-dev musl-dev &&\
+    pip install -r requirements.txt
+
+ENTRYPOINT [ "sh" ]
+CMD [ "entrypoint.sh" ]

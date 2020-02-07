@@ -3,7 +3,7 @@
 bee_api/.idea/
 
 **/__pycache__/
-config.py
+**/config.py
 
 .DS_Store
 .env
