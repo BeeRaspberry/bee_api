@@ -9,3 +9,4 @@ graphene
 graphene-sqlalchemy
 psycopg2-binary
 Flask-Fixtures
+Flask-Paranoid
