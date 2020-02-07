@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 
-echo "Run db upgrade and initialize db"
+echo "Run db upgrade"
 flask db upgrade
 
 if [[ ! -f "${DATABASE_DIR}/seed" &&  ! -z "$SEED" ]]; then
