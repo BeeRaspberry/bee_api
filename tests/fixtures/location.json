@@ -1,0 +1,13 @@
+[
+  {
+    "table": "location",
+    "records": [
+      {
+        "street_address": "123 Main St.",
+        "stateProvinceId": 21,
+        "city": "Boston",
+        "postal_code": "02210"
+      }
+    ]
+  }
+]

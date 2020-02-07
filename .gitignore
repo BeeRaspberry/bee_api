@@ -3,10 +3,7 @@
 bee_api/.idea/
 
 **/__pycache__/
-bee_api/migrations_old/
-bee_api/*.db
-bee_api/tests/__pycache__/
-bee_api/config.py
+**/config.py
 
 .DS_Store
 .env
@@ -22,10 +19,7 @@ build/
 _mailinglist
 .tox/
 .cache/
-.pytest_cache/
 docs/_build/
-app.db
-test_app.db
 
 # Coverage reports
 htmlcov/
@@ -38,3 +32,6 @@ test-reports/
 # VsCode
 .vscode/
 ~/virtualenvs
+
+# Databases
+*.db
