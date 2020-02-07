@@ -1,4 +1,7 @@
 [
+  {
+    "table": "location",
+    "records": [
       {
         "street_address": "123 Main St.",
         "stateProvinceId": 21,
@@ -6,3 +9,5 @@
         "postal_code": "02210"
       }
     ]
+  }
+]

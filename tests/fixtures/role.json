@@ -1,5 +1,7 @@
 [
-
+  {
+    "table": "role",
+    "records": [
       {
         "name": "user",
         "description": "User Account"
@@ -9,4 +11,5 @@
         "description": "Administrator Account"
       }
     ]
-
+  }
+]

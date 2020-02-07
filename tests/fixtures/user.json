@@ -1,6 +1,6 @@
 [
   {
-    "model": "bee_api.models.User",
+    "table": "user",
     "records": [
       {
         "firstName": "Mickey",

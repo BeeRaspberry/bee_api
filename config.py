@@ -7,7 +7,7 @@ class BaseConfig:
     basedir = os.path.abspath(os.path.dirname(__file__))
 
     DATABASE_TYPE = os.environ.get('DATABASE_TYPE') or 'sqlite'
-    DATABASE_NAME = os.environ.get('DATABASE_NAME') or 'beehive_migrate'
+    DATABASE_NAME = os.environ.get('DATABASE_NAME') or 'beehive_dev.dv'
     DATABASE_USER = os.environ.get('DATABASE_USER') or 'root'
     DATABASE_PASSWORD = os.environ.get('DATABASE_PASSWORD') or 'mypassword'
     DATABASE_PORT = os.environ.get('DATABASE_PORT') or None
