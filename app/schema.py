@@ -295,10 +295,85 @@ class CheckAuthInput(graphene.InputObjectType, AuthAttribute):
     pass
 
 
-class User(SQLAlchemyObjectType):
+class UserAttribute:
+    email = graphene.String()
+    firstName = graphene.String()
+    lastName = graphene.String()
+    password = graphene.String()
+    phoneNumber = graphene.String()
+    street_address = graphene.String(description="Street Address")
+    city = graphene.String(description="City Location")
+    postal_code = graphene.String(description="Zip or Postal Code")
+    state_province = graphene.String(description="Name of state, province, ")
+
+
+class User(SQLAlchemyObjectType, UserAttribute):
     class Meta:
         model = UserModel
         interfaces = (relay.Node, )
+
+
+class CreateUserInput(graphene.InputObjectType, UserAttribute):
+    pass
+
+
+class CreateUser(graphene.Mutation):
+    user = graphene.Field(lambda: User,
+                             description="User created by this mutation.")
+
+    class Arguments:
+        input = CreateUserInput(required=True)
+
+    def mutate(self, info, input_value):
+        data = utils.input_to_dictionary(input_value)
+
+        user = UserModel(**data)
+        db.session.add(user)
+        db.session.commit()
+
+        return CreateUser(user=user)
+
+
+class UpdateUserInput(graphene.InputObjectType,
+                               UserAttribute):
+    id = graphene.ID(required=True,
+                     description="Global Id of the User.")
+
+
+class UpdateUser(graphene.Mutation):
+    User = graphene.Field(lambda: User,
+                    description="User updated by this mutation.")
+
+    class Arguments:
+        input = UpdateUserInput(required=True)
+
+    def mutate(self, info, input_value):
+        data = utils.input_to_dictionary(input_value)
+
+        user = db.session.query(UserModel).\
+            filter_by(id=data['id'])
+        user.update(data)
+        db.session.commit()
+        user = db.session.query(UserModel).\
+            filter_by(id=data['id']).first()
+
+        return UpdateUser(User=user)
+
+
+class DeleteUser(graphene.Mutation):
+    ok = graphene.Boolean()
+
+    class Arguments:
+        input = UpdateUserInput(required=True)
+
+    def mutate(self, info, input_value):
+        data = utils.input_to_dictionary(input_value)
+
+        user = db.session.query(UserModel).filter_by(id=data['id'])
+        user.delete()
+        db.session.commit()
+
+        return DeleteUser(ok=True)
 
 
 class Query(graphene.ObjectType):
@@ -320,6 +395,9 @@ class Mutation(graphene.ObjectType):
     createLocation = CreateLocation.Field()
     updateLocation = UpdateLocation.Field()
     deleteLocation = DeleteLocation.Field()
+    createUser = CreateUser.Field()
+    updateUser = UpdateUser.Field()
+    deleteUser = DeleteUser.Field()
 #    checkAuth = CheckAuth.Field()
 
 

@@ -12,9 +12,9 @@ app.config.from_object(environ.get('CONFIG_SETTINGS',
                                    "config.DevelopmentConfig"))
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
-"""
+
 CORS(app)
-paranoid = Paranoid(app)
+"""paranoid = Paranoid(app)
 paranoid.redirect_view = '/'
 
 
