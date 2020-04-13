@@ -1,4 +1,5 @@
 from os import environ
+import logging
 
 from flask_cors import CORS
 from flask import Flask
@@ -26,4 +27,5 @@ user_datastore = SQLAlchemyUserDatastore(db, User, Role)
 security = Security(app, user_datastore,
                     login_form=UserLoginForm)
 """
+
 from app import routes

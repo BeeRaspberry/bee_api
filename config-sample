@@ -6,6 +6,7 @@ class BaseConfig:
     APP_NAME = os.environ.get('APP_NAME') or 'bee_mine'
     basedir = os.path.abspath(os.path.dirname(__file__))
 
+    DATABASE_DIR = os.environ.get('DATABASE_DIR') or basedir
     DATABASE_TYPE = os.environ.get('DATABASE_TYPE') or 'sqlite'
     DATABASE_NAME = os.environ.get('DATABASE_NAME') or 'beehive.db'
     DATABASE_USER = os.environ.get('DATABASE_USER') or 'root'
@@ -14,7 +15,8 @@ class BaseConfig:
     DATABASE_HOST = os.environ.get('DATABASE_HOST') or '127.0.0.1'
 
     if DATABASE_TYPE == 'sqlite':
-        SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, DATABASE_NAME)
+        SQLALCHEMY_DATABASE_URI = 'sqlite:///{}'.format(os.path.join(
+            DATABASE_DIR, DATABASE_NAME))
     else:
         SQLALCHEMY_DATABASE_URI = '{}://{}:{}@{}:{}/{}'.format(
             DATABASE_TYPE, DATABASE_USER, DATABASE_PASSWORD, DATABASE_HOST,
