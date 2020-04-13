@@ -6,7 +6,7 @@ COPY ./requirements.txt /app/requirements.txt
 COPY migrations /app/migrations
 COPY ./app /app/app
 COPY ./seed /app/seed
-COPY ./config-sample /app/config.py
+COPY config-sample.py /app/config.py
 COPY ./helpers /app/helpers
 COPY ./main.py /app/main.py
 COPY prestart.sh /app/prestart
