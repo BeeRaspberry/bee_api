@@ -38,13 +38,15 @@ CMD ["python3"]
 
 FROM python-slim AS container-image
 
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install --no-install-recommends -y \
     uwsgi \
     nginx \
-    supervisor
+    supervisor \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
-COPY ./config_files/nginx.conf /etc/nginx/conf.d/nginx.conf
-COPY ./config_files/confd_nginx.conf /etc/nginx/nginx.conf
+COPY ./config_files/nginx.conf /etc/nginx/nginx.conf
+COPY ./config_files/confd_nginx.conf /etc/nginx/conf.d/nginx.conf
 
 # Copy the base uWSGI ini file to enable default dynamic uwsgi process number
 COPY ./config_files/uwsgi.ini /etc/uwsgi/uwsgi.ini
@@ -53,16 +55,11 @@ COPY ./config_files/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 WORKDIR /app
 
 RUN mkdir -p /spool/nginx /run/pid && \
-    adduser --system nginx && \
     addgroup --system nginx && \
+    adduser --system --ingroup nginx nginx && \
     chmod -R 777 /var/log/nginx /etc/nginx /var/run /run /run/pid /spool/nginx && \
-#    chown -R nginx:nginx /app && \
     chgrp -R 0 /var/log/nginx /etc/nginx /var/run /run /run/pid /spool/nginx && \
     chmod -R g+rwX /var/log/nginx /etc/nginx /var/run /run /run/pid /spool/nginx
-#    touch /var/log/supervisor/supervisord.log && \
-
-
-#USER nginx:nginx
 
 CMD ["/usr/bin/supervisord"]
 
@@ -70,8 +67,6 @@ CMD ["/usr/bin/supervisord"]
 FROM container-image
 
 COPY ./requirements.txt /app/requirements.txt
-
-#WORKDIR /app
 
 RUN pip install -r requirements.txt
 
@@ -92,4 +87,3 @@ ENV FLASK_APP=main.py
 ENV PATH="/home/nginx/.local/bin:${PATH}"
 
 CMD ["/app/entrypoint.sh"]
-#CMD ["sleep", "600"]
