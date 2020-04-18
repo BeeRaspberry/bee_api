@@ -24,6 +24,10 @@ def seed_command(seed_dir):
         except IntegrityError as err:
             print('It appears, {}, was already processed'.format(
                 fixture_file))
+     #   except sqlite3.OperationalError as sql_error:
+     #       print('Problem with database connection, {}'.format(
+     #           db.engine.
+     #       ))
 
 
 if __name__ == '__main__':

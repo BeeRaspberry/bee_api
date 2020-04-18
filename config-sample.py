@@ -15,7 +15,7 @@ class BaseConfig:
     DATABASE_HOST = os.environ.get('DATABASE_HOST') or '127.0.0.1'
 
     if DATABASE_TYPE == 'sqlite':
-        SQLALCHEMY_DATABASE_URI = 'sqlite:///{}'.format(os.path.join(
+        SQLALCHEMY_DATABASE_URI = 'sqlite:////{}'.format(os.path.join(
             DATABASE_DIR, DATABASE_NAME))
     else:
         SQLALCHEMY_DATABASE_URI = '{}://{}:{}@{}:{}/{}'.format(
