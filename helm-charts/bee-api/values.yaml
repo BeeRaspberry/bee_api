@@ -9,6 +9,20 @@ image:
   pullPolicy: Always 
 
 imagePullSecrets: []
+
+volumes:
+  - name: bee-api-volume
+    persistentVolumeClaim:
+      claimName: helm-chart-bee-api
+
+volumeMounts:
+  - mountPath: "/data"
+    name: bee-api-volume
+
+env:
+  - name: DATABASE_DIR
+    value: "/data"
+
 nameOverride: ""
 fullnameOverride: ""
 
