@@ -6,7 +6,7 @@ replicaCount: 1
 
 image:
   repository: erikdeirdre/bee-api
-  pullPolicy: IfNotPresent 
+  pullPolicy: Always 
 
 imagePullSecrets: []
 nameOverride: ""
