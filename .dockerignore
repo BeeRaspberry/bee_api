@@ -34,3 +34,6 @@ test-reports/
 
 # Databases
 *.db
+
+# Allow env.py in migrations
+!**/migrations/env.py
