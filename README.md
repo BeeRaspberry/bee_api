@@ -1,4 +1,5 @@
 # bee_api
+![GitHub issues](https://img.shields.io/github/issues/BeeRaspberry/bee_api?style=flat-square)
 ![](https://github.com/BeeRaspberry/bee_api/workflows/build/badge.svg)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/7dcc779f81d0483d93f0e7c1c5a735e6)](https://www.codacy.com/gh/BeeRaspberry/bee_api?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=BeeRaspberry/bee_api&amp;utm_campaign=Badge_Grade)
 [![Codacy Badge](https://api.codacy.com/project/badge/Coverage/7dcc779f81d0483d93f0e7c1c5a735e6)](https://www.codacy.com/gh/BeeRaspberry/bee_api?utm_source=github.com&utm_medium=referral&utm_content=BeeRaspberry/bee_api&utm_campaign=Badge_Coverage)

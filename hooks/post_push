@@ -1,4 +1,4 @@
 #!/bin/bash
-TAG=$(cat docker-tag)
+TAG=$(cat VERSION)
 docker tag $IMAGE_NAME $DOCKER_REPO:$TAG
 docker push $DOCKER_REPO:$TAG
