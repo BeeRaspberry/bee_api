@@ -51,5 +51,5 @@ jobs:
     - name: Publish helm packages
       uses: J12934/helm-gh-pages-action@master
       with:
-        access-token: ${{ secrets.ACCESS_TOKEN }}
+        access-token: ${{ secrets.PAGES_TOKEN }}
         charts-folder: helm-charts
