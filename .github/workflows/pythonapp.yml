@@ -50,6 +50,6 @@ jobs:
 
     - name: Publish helm packages
       uses: J12934/helm-gh-pages-action@master
-        with:
-          access-token: ${{ secrets.ACCESS_TOKEN }}
-          charts-folder: helm-charts
+      with:
+        access-token: ${{ secrets.ACCESS_TOKEN }}
+        charts-folder: helm-charts
