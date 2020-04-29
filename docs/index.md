@@ -34,15 +34,6 @@ Two additional, `flask` commands exist for prepping the database.
 - `initdb` creates the table schema for the application. Shouldn't be needed.
 - `seed` populates the database with data found in the directory specified. Usage: `flask seed {load files directory}`. It's not intended to do updates, only initial data load.
 
-## Deploying using Helm
-### Local Helm Chart
-`helm install helm-charts/bee-api`
-
-### Github Pages Repo
-Add the repo
-`helm repo add <repo name> https://beeraspberry.github.io/bee_api/`
-Install
-`helm install <repo name>/bee-api`
 
 ## Troubleshooting
 
