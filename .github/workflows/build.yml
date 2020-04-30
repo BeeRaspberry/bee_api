@@ -48,8 +48,16 @@ jobs:
       run: |
         python-codacy-coverage -r test-results/coverage.xml
 
+    - name: Dump GitHub context
+      env:
+        GITHUB_CONTEXT: ${{ toJson(github) }}
+      run: echo "$GITHUB_CONTEXT"
+
     - name: Publish helm packages
       uses: helm/chart-releaser-action@v1.0.0-rc.1
+      with:
+        charts_dir: helm-charts/bee-api
+ #       charts_repo_url:
       env:
         CR_TOKEN: ${{ secrets.PAGES_TOKEN }}
         charts-folder: helm-charts/bee-api
