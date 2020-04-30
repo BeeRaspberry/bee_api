@@ -57,7 +57,7 @@ jobs:
       uses: jungwinter/split@v1
       id: split
       with:
-        msg: $GITHUB_REPOSITORY
+        msg: "$GITHUB_REPOSITORY"
         seperator: "/"
 
     - name: Publish helm packages
