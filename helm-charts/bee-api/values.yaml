@@ -13,7 +13,7 @@ imagePullSecrets: []
 volumes:
   - name: bee-api-volume
     persistentVolumeClaim:
-      claimName: helm-chart-bee-api
+      claimName: bee-api-claim
 
 volumeMounts:
   - mountPath: "/data"
