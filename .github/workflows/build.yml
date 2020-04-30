@@ -49,7 +49,8 @@ jobs:
         python-codacy-coverage -r test-results/coverage.xml
 
     - name: Publish helm packages
-      uses: J12934/helm-gh-pages-action@master
+      uses: helm/chart-releaser-action@v1.0.0-rc.1
       with:
         access-token: ${{ secrets.PAGES_TOKEN }}
-        charts-folder: helm-charts
+        charts-folder: helm-charts/bee-api
+#        charts_repo_url: https://beeraspberry.github.io/bee_api/
