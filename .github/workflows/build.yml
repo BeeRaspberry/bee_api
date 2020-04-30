@@ -51,6 +51,6 @@ jobs:
     - name: Publish helm packages
       uses: helm/chart-releaser-action@v1.0.0-rc.1
       with:
-        access-token: ${{ secrets.PAGES_TOKEN }}
+        CR_TOKEN: ${{ secrets.PAGES_TOKEN }}
         charts-folder: helm-charts/bee-api
 #        charts_repo_url: https://beeraspberry.github.io/bee_api/
