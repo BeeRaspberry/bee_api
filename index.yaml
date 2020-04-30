@@ -1,0 +1,14 @@
+apiVersion: v1
+entries:
+  bee-api:
+  - apiVersion: v2
+    appVersion: V1.0
+    created: "2020-04-28T16:53:40.4407-04:00"
+    description: A Helm chart for Kubernetes
+    digest: 8e30733d1e3b5443e43b3b03138ee9f46fe24542f50e68b1c48daf5e7e9aeb04
+    name: bee-api
+    type: application
+    urls:
+    - https://beeraspberry.github.io/bee_api/bee-api-0.1.0.tgz
+    version: 0.1.0
+generated: "2020-04-28T16:53:40.4386998-04:00"
