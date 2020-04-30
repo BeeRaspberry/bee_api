@@ -57,14 +57,14 @@ jobs:
       uses: jungwinter/split@v1
       id: split
       with:
-        msg: "$GITHUB_REPOSITORY"
+        msg: ${{ github.repository }}
         seperator: "/"
 
     - name: Publish helm packages
       uses: helm/chart-releaser-action@v1.0.0-rc.1
       with:
         charts_dir: helm-charts/bee-api
-        charts_repo_url: https://${{ steps.split.outputs._0 }}.github.io/${{ steps.split.outputs._1 }}/helm-charts
+        charts_repo_url: https://${{ github.repository_owner }}.github.io/${{ steps.split.outputs._1 }}/helm-charts
       env:
         CR_TOKEN: ${{ secrets.PAGES_TOKEN }}
         charts-folder: helm-charts/bee-api
