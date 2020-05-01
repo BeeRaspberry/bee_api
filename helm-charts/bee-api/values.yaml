@@ -93,14 +93,3 @@ affinity: {}
 
 frontend:
   enabled: false
-
-webAppName: angular-map
-webImageName: angular-map
-webImageVersion: v0.3
-backendName: flask-map
-backendImageName: flask-map
-backendVersion: v0.1
-volumeClaimName: mongo-pv-claim
-persistentVolumeName: task-pv-volume
-webServiceName: angularpwa
-backendServiceName: mongodb

@@ -67,5 +67,3 @@ jobs:
         charts_repo_url: https://${{ github.repository_owner }}.github.io/${{ steps.split.outputs._1 }}/helm-charts
       env:
         CR_TOKEN: ${{ secrets.PAGES_TOKEN }}
-        charts-folder: helm-charts/bee-api
-#        charts_repo_url: https://beeraspberry.github.io/bee_api/
