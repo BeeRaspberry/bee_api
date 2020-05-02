@@ -20,6 +20,11 @@ jobs:
         echo ::set-env name=IMAGE_NAME::"bee-api"
         echo ::set-env name=DOCKER_TAG::$(cat VERSION)
 
+    - name: display environment
+      run: |
+        echo "Image Name: ${IMAGE_NAME}"
+        echo "Docker tag: ${DOCKER_TAG}"
+
     - name: Build the Docker image
       run: docker build . --file Dockerfile --tag $IMAGE_NAME:$DOCKER_TAG
 
