@@ -10,6 +10,8 @@ COPY . .
 COPY migrations /app/migrations
 COPY ./app /app/app
 COPY ./seed /app/seed
+# attempt to fix layering issue when running on Github action
+RUN true
 COPY ./config-sample.py /app/config.py
 COPY ./helpers /app/helpers
 COPY ./main.py /app/main.py
