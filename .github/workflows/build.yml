@@ -47,23 +47,3 @@ jobs:
         CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
       run: |
         python-codacy-coverage -r test-results/coverage.xml
-
-    - name: Configure Git
-      run: |
-        git config user.name "$GITHUB_ACTOR"
-        git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
-
-    - name: Get repo and owner
-      uses: jungwinter/split@v1
-      id: split
-      with:
-        msg: ${{ github.repository }}
-        seperator: "/"
-
-    - name: Publish helm packages
-      uses: helm/chart-releaser-action@v1.0.0-rc.1
-      with:
-        charts_dir: helm-charts/bee-api
-        charts_repo_url: https://${{ github.repository_owner }}.github.io/${{ steps.split.outputs._1 }}/helm-charts
-      env:
-        CR_TOKEN: ${{ secrets.PAGES_TOKEN }}
