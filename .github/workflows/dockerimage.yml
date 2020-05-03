@@ -18,12 +18,17 @@ jobs:
     - name: set variables
       run: |
         echo ::set-env name=IMAGE_NAME::"bee-api"
-        echo ::set-env name=REPOSITORY::"erikdeirdre"
+        echo ::set-env name=REPOSITORY::"erikdeirdre:${ IMAGE_NAME}"
         echo ::set-env name=DOCKER_TAG::$(cat VERSION)
+
+    - name: print variable
+      run: |
+        echo "repo:  $REPOSITORY/$IMAGE_NAME"
+        echo "repo2: env.REPOSITORY"
 
     - name: Build the Docker image
       run: docker build . --file Dockerfile --tag $IMAGE_NAME:$DOCKER_TAG
-      
+
     - name: Push image to Docker Repo
       uses: docker/build-push-action@v1
       with:
