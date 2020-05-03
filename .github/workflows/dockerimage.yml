@@ -17,14 +17,18 @@ jobs:
 
     - name: set variables
       run: |
+        echo erikdeirdre >TEMPFILE
+        echo ::set-env name=TEMP::$(cat TEMPFILE)
         echo ::set-env name=IMAGE_NAME::"bee-api"
-        echo ::set-env name=REPOSITORY::"erikdeirdre"
+        echo ::set-env name=REPOSITORY::"mickey"
         echo ::set-env name=DOCKER_TAG::$(cat VERSION)
         echo ::set-env name=DESC::$(echo $REPOSITORY)
 
     - name: print variable
       run: |
+        echo "repo: $REPOSITORY"
         echo "repo:  $DESC"
+        echo "repo2: $TEMP"
 
     - name: Build the Docker image
       run: docker build . --file Dockerfile --tag $IMAGE_NAME:$DOCKER_TAG
