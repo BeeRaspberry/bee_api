@@ -22,7 +22,7 @@ jobs:
 
     - name: display environment
       run: |
-        echo "Image Name: ${IMAGE_NAME}"
+        echo "repository: ${{ secrets.DOCKER_USER }}/${IMAGE_NAME}"
         echo "Docker tag: ${DOCKER_TAG}"
 
     - name: Build the Docker image
@@ -33,5 +33,5 @@ jobs:
       with:
         username: ${{ secrets.DOCKER_USER }}
         password: ${{ secrets.DOCKER_TOKEN }}
-        repository: ${{ secrets.DOCKER_USER }}/${IMAGE_NAME}
+        repository: "${{ secrets.DOCKER_USER }}/${IMAGE_NAME}"
         tags: ${DOCKER_TAG}
