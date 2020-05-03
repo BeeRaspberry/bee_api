@@ -20,11 +20,11 @@ jobs:
         echo ::set-env name=IMAGE_NAME::"bee-api"
         echo ::set-env name=REPOSITORY::"erikdeirdre"
         echo ::set-env name=DOCKER_TAG::$(cat VERSION)
+        echo ::set-env name=DESC::$(echo $REPOSITORY)
 
     - name: print variable
       run: |
-        echo "repo:  $REPOSITORY/$IMAGE_NAME"
-        echo "repo2: env.REPOSITORY"
+        echo "repo:  $DESC"
 
     - name: Build the Docker image
       run: docker build . --file Dockerfile --tag $IMAGE_NAME:$DOCKER_TAG
