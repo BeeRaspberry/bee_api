@@ -22,12 +22,12 @@ jobs:
         echo ::set-env name=DOCKER_TAG::$(cat VERSION)
 
     - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag ${IMAGE_NAME}:${DOCKER_TAG}
-
+      run: docker build . --file Dockerfile --tag $IMAGE_NAME:$DOCKER_TAG
+      
     - name: Push image to Docker Repo
       uses: docker/build-push-action@v1
       with:
         username: ${{ secrets.DOCKER_USER }}
         password: ${{ secrets.DOCKER_TOKEN }}
-        repository: ${REPOSITORY}/${IMAGE_NAME}
-        tags: ${DOCKER_TAG}
+        repository: $REPOSITORY/$IMAGE_NAME
+        tags: $DOCKER_TAG
