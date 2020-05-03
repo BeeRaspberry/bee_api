@@ -18,7 +18,7 @@ jobs:
     - name: set variables
       run: |
         echo ::set-env name=IMAGE_NAME::"bee-api"
-        echo ::set-env name=REPOSITORY::"erikdeirdre:${ IMAGE_NAME}"
+        echo ::set-env name=REPOSITORY::"erikdeirdre"
         echo ::set-env name=DOCKER_TAG::$(cat VERSION)
 
     - name: print variable
