@@ -1,0 +1,20 @@
+name: merge-job
+
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  merge-job:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: PING - Dispatch initiating repository event
+      run: |
+        curl -X POST https://api.github.com/repos/BeeRaspberry/helm-charts/dispatches \
+        -H 'Accept: application/vnd.github.everest-preview+json' \
+        -H 'Content-Type: application/json' \
+        -u ${{ secrets.ACCESS_TOKEN }} \
+        --data '{"event_type": "version_change", "client_payload": { "repository": "'"$GITHUB_REPOSITORY"'" }}'
