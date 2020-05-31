@@ -9,6 +9,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@v1
+      with:
+        fetch-depth: 0
+
     - name: Set up Python 3.7
       uses: actions/setup-python@v1
       with:
@@ -47,3 +50,32 @@ jobs:
         CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
       run: |
         python-codacy-coverage -r test-results/coverage.xml
+
+# Following logic updates the value in VERSION automatically, on 'master'
+    - name: Increment Version - if same as prior commit
+      if: github.ref == 'refs/heads/master'
+      run: |
+        echo ::set-env name=VERSION_CHANGE::0
+        DIFF=$(git diff HEAD^ HEAD VERSION)
+        if [[ -z "$DIFF" ]]; then
+          IFS='.'; read -r -a array <<< "$(cat VERSION)"
+          CNT="${array[1]}"
+          ((CNT++))
+          echo "${array[0]}.${CNT}.${array[2]}" >VERSION
+          echo ::set-env name=VERSION_CHANGE::1
+        fi
+    
+    - name: Commit Updated Version File
+      if: env.VERSION_CHANGE == 1 && github.ref == 'refs/heads/master' 
+      run: |
+        git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+        git config --local user.name ${GITHUB_ACTOR}
+        git add VERSION
+        git commit -m "Updated VERSION file"
+  
+    - name: Push changes to master
+      if: env.VERSION_CHANGE == 1 && github.ref == 'refs/heads/master'
+      uses: ad-m/github-push-action@master
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        force: true
