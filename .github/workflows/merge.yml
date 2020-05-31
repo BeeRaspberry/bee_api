@@ -42,8 +42,9 @@ jobs:
 
     - name: Notify Helm Chart Repo of the Commit
       run: |
+        API_VERSION=$(cat VERSION)
         curl -X POST https://api.github.com/repos/BeeRaspberry/helm-charts/dispatches \
         -H 'Accept: application/vnd.github.everest-preview+json' \
         -H 'Content-Type: application/json' \
         -u ${{ secrets.ACCESS_TOKEN_REPO }} \
-        --data '{"event_type": "version_change", "client_payload": { "repository": "'"$GITHUB_REPOSITORY"'" }}'
+        --data '{"event_type": "version_change", "client_payload": { "repository": "'"$GITHUB_REPOSITORY"'", "version": "'${API_VERSION}'" }}'
