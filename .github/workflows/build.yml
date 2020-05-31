@@ -50,6 +50,7 @@ jobs:
         CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
       run: |
         python-codacy-coverage -r test-results/coverage.xml
+        echo "REF: ${github.ref}"
 
 # Following logic updates the value in VERSION automatically, on 'master'
     - name: Increment Version - if same as prior commit
@@ -64,6 +65,8 @@ jobs:
           echo "${array[0]}.${CNT}.${array[2]}" >VERSION
           echo ::set-env name=VERSION_CHANGE::1
         fi
+
+        echo "VERSION CHANGE: ${env.VERSION_CHANGE}"
     
     - name: Commit Updated Version File
       if: env.VERSION_CHANGE == 1 && github.ref == 'refs/heads/master' 
