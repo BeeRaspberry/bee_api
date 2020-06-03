@@ -12,7 +12,9 @@ jobs:
     - uses: actions/checkout@v2
       with:
         fetch-depth: 0
-        
+
+# Assume since the developer didn't change the version then this is a minor change.
+# Increment by one, and set patch to 0.        
     - name: Increment Version if same as Master
       run: |
         echo ::set-env name=VERSION_CHANGE::0
@@ -21,7 +23,7 @@ jobs:
           IFS='.'; read -r -a array <<< "$(cat VERSION)"
           CNT="${array[1]}"
           ((CNT++))
-          echo "${array[0]}.${CNT}.${array[2]}" >VERSION
+          echo "${array[0]}.${CNT}.0" >VERSION
           echo ::set-env name=VERSION_CHANGE::1
         fi
 
