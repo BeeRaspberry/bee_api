@@ -58,6 +58,8 @@ jobs:
         python-codacy-coverage -r test-results/coverage.xml
 
 # Following logic updates the value in VERSION automatically, on 'master'
+# Assume since the developer didn't change the version then this is a minor change.
+# Increment by one, and set patch to 0. 
     - name: Increment Version - if same as prior commit
       if: github.ref == 'refs/heads/master'
       run: |
@@ -66,7 +68,7 @@ jobs:
           IFS='.'; read -r -a array <<< "$(cat VERSION)"
           CNT="${array[1]}"
           ((CNT++))
-          echo "${array[0]}.${CNT}.${array[2]}" >VERSION
+          echo "${array[0]}.${CNT}.0" >VERSION
           echo ::set-env name=VERSION_CHANGE::1
         fi
     
