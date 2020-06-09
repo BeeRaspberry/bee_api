@@ -1,6 +1,9 @@
 name: build
 
-on: [push]
+on: 
+  push:
+    paths-ignore:
+    - '.github/workflows/**'
 
 jobs:
   build:
@@ -79,6 +82,7 @@ jobs:
         git config --local user.name ${GITHUB_ACTOR}
         git add VERSION
         git commit -m "Updated VERSION file"
+        echo ::set-env name=TAG_NAME::$(cat VERSION)
   
     - name: Push changes to master
       if: env.VERSION_CHANGE == 1 && github.ref == 'refs/heads/master'
@@ -87,7 +91,21 @@ jobs:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         force: true
 
+    - name: Build image
+      if: github.ref == 'refs/heads/master'
+      run: docker build . --tag $TAG_NAME
+
+    - name: Publish to Registry
+      if: github.ref == 'refs/heads/master'
+      uses: elgohr/Publish-Docker-Github-Action@master
+      with:
+        name: beeraspberry/bee-api
+        username: ${{ secrets.DOCKER_USER }}
+        password: ${{ secrets.DOCKER_TOKEN }}
+        tags: "latest,${( env.TAG_NAME }}"
+
     - name: Notify Helm Chart Repo of the Commit
+      if: github.ref == 'refs/heads/master'
       run: |
         API_VERSION=$(cat VERSION)
         curl -X POST https://api.github.com/repos/BeeRaspberry/helm-charts/dispatches \
