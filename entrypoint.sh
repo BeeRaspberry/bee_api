@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-#export FLASK_ENV=development
-
 echo "Run DB Upgrade"
 
 flask db upgrade
