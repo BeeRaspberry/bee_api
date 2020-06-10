@@ -76,7 +76,13 @@ jobs:
           echo "${array[0]}.${CNT}.0" >VERSION
           echo ::set-env name=VERSION_CHANGE::1
         fi
-    
+  
+    - name: Build image
+      if: github.ref == 'refs/heads/master'
+      run: |
+        docker build . --tag $TAG_NAME
+        ls -l
+
     - name: Commit Updated Version File
       if: env.VERSION_CHANGE == 1 && github.ref == 'refs/heads/master' 
       run: |
