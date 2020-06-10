@@ -86,14 +86,14 @@ jobs:
       env:
         TAG_NAME: "$(cat VERSION)"
       run: |
-        echo ::set-env name=TAG_NAME::$TAG_NAME
+        echo ::set-env name=IMAGE_NAME::$TAG_NAME
         docker build . --tag "${{ env.TAG_NAME }}"
         docker images
 
     - name: Scan image
       uses: anchore/scan-action@master
       with:
-        image-reference: "${{ env.TAG_NAME }}:latest"
+        image-reference: "${{ env.IMAGE_NAME }}:latest"
         fail-build: true
     
     - name: Upload Scan Vulnerabilities Results
