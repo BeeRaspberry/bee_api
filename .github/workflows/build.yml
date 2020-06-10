@@ -86,7 +86,7 @@ jobs:
       if: github.ref == 'refs/heads/master'
       run: |
         echo ::set-env name=TAG_NAME::"$(cat VERSION)"
-        echo "TAG NAME: ${( env.TAG_NAME }}"
+        echo "TAG NAME: ${{ env.TAG_NAME }}"
         docker build . --tag "${{ env.TAG_NAME }}"
         ls -l
 
