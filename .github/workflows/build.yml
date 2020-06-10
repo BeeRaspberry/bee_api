@@ -90,7 +90,6 @@ jobs:
         git config --local user.name ${GITHUB_ACTOR}
         git add VERSION
         git commit -m "Updated VERSION file"
-        echo ::set-env name=TAG_NAME::$(cat VERSION)
   
     - name: Push changes to master
       if: env.VERSION_CHANGE == 1 && github.ref == 'refs/heads/master'
@@ -102,6 +101,7 @@ jobs:
     - name: Build image
       if: github.ref == 'refs/heads/master'
       run: |
+        echo ::set-env name=TAG_NAME::$(cat VERSION)
         docker build . --tag $TAG_NAME
         ls -l
 
