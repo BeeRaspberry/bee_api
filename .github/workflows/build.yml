@@ -22,6 +22,7 @@ jobs:
         git config user.name "$GITHUB_ACTOR"
         git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
         echo ::set-env name=VERSION_CHANGE::0
+        echo ::set-env name=APP_SETTINGS::"config-sample.TestingConfig"
 
     - name: Set up Python 3.7
       uses: actions/setup-python@v1
@@ -32,10 +33,6 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-
-    - name: set variables
-      run: |
-        echo ::set-env name=APP_SETTINGS::"config-sample.TestingConfig"
 
     - name: Lint with flake8
       run: |
@@ -95,7 +92,8 @@ jobs:
     - name: Build image
       if: github.ref == 'refs/heads/master'
       run: |
-        echo ::set-env name=TAG_NAME::$(cat VERSION)
+        VER="$(cat VERSION)"
+        echo ::set-env name=TAG_NAME::"$(cat VERSION)"
         echo "TAG NAME: ${( env.TAG_NAME }}"
         docker build . --tag ${( env.TAG_NAME }}
         ls -l
