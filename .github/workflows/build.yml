@@ -82,18 +82,11 @@ jobs:
         git add VERSION
         git commit -m "Updated VERSION file"
   
-    - name: Push changes to master
-      if: env.VERSION_CHANGE == 1 && github.ref == 'refs/heads/master'
-      uses: ad-m/github-push-action@master
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        force: true
-
     - name: Build image
       if: github.ref == 'refs/heads/master'
       run: |
         VER="$(cat VERSION)"
-        echo ::set-env name=TAG_NAME::"$(cat VERSION)"
+        echo ::set-env name=TAG_NAME::"$VER"
         echo "TAG NAME: ${( env.TAG_NAME }}"
         docker build . --tag ${( env.TAG_NAME }}
         ls -l
@@ -103,7 +96,14 @@ jobs:
       uses: anchore/scan-action@master
       with:
         image-reference: "localbuild/bee-api:latest"
-#        fail-build: true
+        fail-build: true
+
+    - name: Push changes to master
+      if: env.VERSION_CHANGE == 1 && github.ref == 'refs/heads/master'
+      uses: ad-m/github-push-action@master
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        force: true
 
     - name: Publish to Registry
       if: github.ref == 'refs/heads/master'
