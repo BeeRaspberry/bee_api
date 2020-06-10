@@ -85,10 +85,9 @@ jobs:
     - name: Build image
       if: github.ref == 'refs/heads/master'
       run: |
-        VER="$(cat VERSION)"
-        echo ::set-env name=TAG_NAME::"$VER"
+        echo ::set-env name=TAG_NAME::"$(cat VERSION)"
         echo "TAG NAME: ${( env.TAG_NAME }}"
-        docker build . --tag ${( env.TAG_NAME }}
+        docker build . --tag "${{ env.TAG_NAME }}"
         ls -l
 
     - name: Scan image
