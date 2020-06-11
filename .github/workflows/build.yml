@@ -86,16 +86,16 @@ jobs:
       env:
         TAG_NAME: "$(cat VERSION)"
       run: |
-        echo ::set-env name=IMAGE_NAME::$TAG_NAME
-        docker build . --tag "${{ env.TAG_NAME }}"
-        docker images
+        echo ::set-env name=IMAGE_NAME::"${{ env.TAG_NAME }}"
+        docker build . --tag "bee-api:latest"
+        docker tag bee-api:latest "bee-api:${{ env.TAG_NAME }}"
 
     - name: Scan image
       uses: anchore/scan-action@master
       with:
-        image-reference: "${{ env.IMAGE_NAME }}:latest"
+        image-reference: "bee-api:latest"
         fail-build: true
-    
+
     - name: Upload Scan Vulnerabilities Results
       uses: actions/upload-artifact@v2
       with:
