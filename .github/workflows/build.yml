@@ -128,7 +128,7 @@ jobs:
         name: beeraspberry/bee-api
         username: ${{ secrets.DOCKER_USER }}
         password: ${{ secrets.DOCKER_TOKEN }}
-        tags: "latest,${{ env.TAG_NAME }}"
+        tags: "latest,${{ env.IMAGE_NAME }}"
 
     - name: Notify Helm Chart Repo of the Commit
       if: github.ref == 'refs/heads/master'
