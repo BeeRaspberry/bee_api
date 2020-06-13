@@ -12,10 +12,10 @@ The following assumes you're using `sqlite` for your database.
 
 ### Running Locally
 
-- create a virtualenv
-- run ```pip install -r requirements.txt```
-- if using Windows, run ```set FLASK_APP=main.py```, else ```export FLASK_APP=main.py```
-- run ```flask run```
+-   create a virtualenv
+-   run ```pip install -r requirements.txt```
+-   if using Windows, run ```set FLASK_APP=main.py```, else ```export FLASK_APP=main.py```
+-   run ```flask run```
 
 You should be able to access the `graphql` console via `http://127.0.0.1:5000`
 
@@ -23,16 +23,16 @@ You should be able to access the `graphql` console via `http://127.0.0.1:5000`
 
 If you plan on persisting data between runs then you need to create a Docker volume, and mount it within the container.
 
-- create a Docker volume, `docker volume create {volume name}`. For example, `docker volume create sqlite_data`.
-- build the container, `docker build -t {tag name} .`. For example: `docker build -t bee_api:latest .`
-- run the container, `docker run -d -v {source volume}:/{target name} -p 127.0.0.1:5001:5000 -e "CONFIG_SETTINGS=config.ProductionConfig" -e "DATABASE_DIR={database location}" {tag name}`. For example: `docker run -d -v sqlite_data:/data -e "CONFIG_SETTINGS=config.ProductionConfig" -p 127.0.0.1:5001:5000-e "DATABASE_DIR=/data" bee_api`.
+-   create a Docker volume, `docker volume create {volume name}`. For example, `docker volume create sqlite_data`.
+-   build the container, `docker build -t {tag name} .`. For example: `docker build -t bee_api:latest .`
+-   run the container, `docker run -d -v {source volume}:/{target name} -p 127.0.0.1:5001:5000 -e "CONFIG_SETTINGS=config.ProductionConfig" -e "DATABASE_DIR={database location}" {tag name}`. For example: `docker run -d -v sqlite_data:/data -e "CONFIG_SETTINGS=config.ProductionConfig" -p 127.0.0.1:5001:5000-e "DATABASE_DIR=/data" bee_api`.
 
 ### Flask Options 
 
 Two additional, `flask` commands exist for prepping the database. 
 
-- `initdb` creates the table schema for the application. Shouldn't be needed.
-- `seed` populates the database with data found in the directory specified. Usage: `flask seed {load files directory}`. It's not intended to do updates, only initial data load.
+-   `initdb` creates the table schema for the application. Shouldn't be needed.
+-   `seed` populates the database with data found in the directory specified. Usage: `flask seed {load files directory}`. It's not intended to do updates, only initial data load.
 
 ## Deploying using Helm
 ### Local Helm Chart
