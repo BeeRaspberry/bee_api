@@ -1,5 +1,4 @@
-# bee_api
-![Bee Web Icon](images/beewhitecrosshatch.jpg)
+# ![Bee Web Icon](images/beewhitecrosshatch.jpg) bee_api
 
 ![GitHub issues](https://img.shields.io/github/issues/BeeRaspberry/bee_api?style=flat-square)
 ![build](https://github.com/BeeRaspberry/bee_api/workflows/build/badge.svg?branch=master)
