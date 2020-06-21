@@ -1,4 +1,6 @@
 # bee_api
+![Bee Web Icon](images/beewhitecrosshatch.jpg)
+
 ![GitHub issues](https://img.shields.io/github/issues/BeeRaspberry/bee_api?style=flat-square)
 ![build](https://github.com/BeeRaspberry/bee_api/workflows/build/badge.svg?branch=master)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/7dcc779f81d0483d93f0e7c1c5a735e6)](https://www.codacy.com/gh/BeeRaspberry/bee_api?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=BeeRaspberry/bee_api&amp;utm_campaign=Badge_Grade)
