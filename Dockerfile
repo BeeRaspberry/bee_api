@@ -79,7 +79,7 @@ COPY ./seed /app/seed
 COPY ./config-sample.py /app/config.py
 COPY ./helpers /app/helpers
 COPY ./main.py /app/main.py
-#COPY ./entrypoint.sh /app/entrypoint
+COPY ./entrypoint.sh /app/entrypoint
 
 # The SED commands replace the Windows characters
 #RUN sed -e "s/\r//g" /app/entrypoint > /app/entrypoint.sh && chmod u+x /app/entrypoint.sh
