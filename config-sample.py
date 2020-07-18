@@ -20,7 +20,7 @@ class BaseConfig:
     else:
         SQLALCHEMY_DATABASE_URI = '{}://{}:{}@{}:{}/{}'.format(
             DATABASE_TYPE, DATABASE_USER, DATABASE_PASSWORD, DATABASE_HOST,
-            DATABASE_PORT, DATABASE_NAME)
+            int(DATABASE_PORT), DATABASE_NAME)
 
     SECRET_KEY = os.getenv('SECRET_KEY', 'my_precious')
     SECRET_TIMEOUT = int(os.getenv('SECRET_TIMEOUT', '900'))
