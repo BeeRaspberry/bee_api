@@ -4,6 +4,7 @@
 **/__pycache__/
 **/.pytest_cache/
 config.py
+config.cfg
 
 .DS_Store
 .env
