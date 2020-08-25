@@ -10,9 +10,6 @@ from datetime import datetime
 
 import unittest
 
-os.environ['APP_SETTINGS'] = 'bee_api.config.TestingConfig'
-
-
 class BeeWebTestCase(unittest.TestCase):
     def create_user_token(self, account={'email': 'joe@gmail.com',
                                          'password': 'test'},
