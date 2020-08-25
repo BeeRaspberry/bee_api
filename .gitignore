@@ -6,7 +6,7 @@
 config.py
 
 .DS_Store
-.env
+.venv
 .flaskenv
 *.pyc
 *.pyo
@@ -32,6 +32,9 @@ test-reports/
 # VsCode
 .vscode/
 ~/virtualenvs
+scripts
+lib
+pyvenv.cfg
 
 # Databases
 *.db
