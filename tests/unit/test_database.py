@@ -1,9 +1,13 @@
 import unittest
 import pytest
-from app import db
+from app import (db, app)
 from app.database import (Country, StateProvince, Location, HiveData, Hive,
                           User, Role)
 
+with app.test_request_context():
+     db.init_app(app)
+
+     db.create_all()
 
 @pytest.fixture(scope='module')
 def init_database():
