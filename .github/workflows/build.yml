@@ -22,7 +22,8 @@ jobs:
         git config user.name "$GITHUB_ACTOR"
         git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
         echo ::set-env name=VERSION_CHANGE::0
-        echo ::set-env name=CONFIG_FILE::"config-sample.cfg"
+        echo ::set-env name=CONFIG_FILE::"../config-sample.cfg"
+        sqlite3 --version
 
     - name: Set up Python 3.7
       uses: actions/setup-python@v1
@@ -44,6 +45,7 @@ jobs:
 
     - name: Test with pytest
       run: |
+        sqlite3 bee.db
         pip install -r test_requirements.txt
         coverage run -m pytest --junitxml=test-results/test-results.xml
 
