@@ -1,5 +1,4 @@
-from os import environ
-from os.path import (join, exists, abspath, dirname, exists)
+from os.path import (join, exists, abspath, dirname)
 from os import (environ)
 import sys
 import logging
@@ -15,7 +14,7 @@ if environ.get('CONFIG_FILE') and not exists(environ.get('CONFIG_FILE')):
     print('Config file, {}, not found ... exiting'.format(
         environ.get('CONFIG_FILE')))
     sys.exit(9)
-    
+
 app = Flask(__name__)
 
 app.config.from_pyfile(environ.get('CONFIG_FILE') or 'config.cfg')
@@ -26,17 +25,16 @@ db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
 CORS(app)
-"""paranoid = Paranoid(app)
-paranoid.redirect_view = '/'
-
-
-if not app.debug and not app.testing and not app.config['SSL_DISABLE']:
-    from flask.ext.sslify import SSLify
-    SSLify(app)
-
-user_datastore = SQLAlchemyUserDatastore(db, User, Role)
-security = Security(app, user_datastore,
-                    login_form=UserLoginForm)
-"""
+#paranoid = Paranoid(app)
+#paranoid.redirect_view = '/'
+#
+#
+#if not app.debug and not app.testing and not app.config['SSL_DISABLE']:
+#    from flask.ext.sslify import SSLify
+#    SSLify(app)
+#
+#user_datastore = SQLAlchemyUserDatastore(db, User, Role)
+#security = Security(app, user_datastore,
+#                    login_form=UserLoginForm)
 
 from app import routes

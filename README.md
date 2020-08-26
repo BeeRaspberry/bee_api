@@ -16,11 +16,14 @@ The following assumes you're using `sqlite` for your database.
 -   create a virtualenv
 -   run ```pip install -r requirements.txt```
 -   set `FLASK_APP` to `main.py`
-     -   Linux and OSX, ```export FLASK_APP=main.py```
-     -   Windows, ```set FLASK_APP=main.py```
-     -   Powershell (Visual Studio Code), ```$env:FLASK_APP='main.py'```
+    -   Linux and OSX, ```export FLASK_APP=main.py```
+    -   Windows, ```set FLASK_APP=main.py```
+    -   Powershell (Visual Studio Code), ```$env:FLASK_APP='main.py'```
+
 -   run ```flask db upgrade``` to setup database
+
 -   run ```flask seed``` to populate Country and State/Provinces tables
+
 -   run ```flask run```
 
 Access the `graphql` console via `http://127.0.0.1:5000/graphql`
