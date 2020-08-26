@@ -13,20 +13,20 @@ The following assumes you're using `sqlite` for your database.
 
 ### Running Locally
 
-- create a virtualenv
+-   create a virtualenv
 
-- run ```pip install -r requirements.txt```
+-   run ```pip install -r requirements.txt```
 
-- set `FLASK_APP` to `main.py`
-  - Linux and OSX, ```export FLASK_APP=main.py```
-  - Windows, ```set FLASK_APP=main.py```
-  - Powershell (Visual Studio Code), ```$env:FLASK_APP='main.py'```
+-   set `FLASK_APP` to `main.py`
+    -   Linux and OSX, ```export FLASK_APP=main.py```
+    -   Windows, ```set FLASK_APP=main.py```
+    -   Powershell (Visual Studio Code), ```$env:FLASK_APP='main.py'```
 
-- run ```flask db upgrade``` to setup database
+-   run ```flask db upgrade``` to setup database
 
-- run ```flask seed``` to populate Country and State/Provinces tables
+-   run ```flask seed``` to populate Country and State/Provinces tables
 
-- run ```flask run```
+-   run ```flask run```
 
 Access the `graphql` console via `http://127.0.0.1:5000/graphql`
 
@@ -49,9 +49,9 @@ Access the `graphql` console via `http://127.0.0.1:5000/graphql`
 
 If you plan on persisting data between runs then you need to create a Docker volume, and mount it within the container.
 
-- create a Docker volume, `docker volume create {volume name}`. For example, `docker volume create sqlite_data`.
-- build the container, `docker build -t {tag name} .`. For example: `docker build -t bee_api:latest .`
-- run the container, `docker run -d -v {source volume}:/{target name} -p 127.0.0.1:5001:5000 -e "CONFIG_SETTINGS=config.ProductionConfig" -e "DATABASE_DIR={database location}" {tag name}`. For example: `docker run -d -v sqlite_data:/data -e "CONFIG_SETTINGS=config.ProductionConfig" -p 127.0.0.1:5001:5000-e "DATABASE_DIR=/data" bee_api`.
+-   create a Docker volume, `docker volume create {volume name}`. For example, `docker volume create sqlite_data`.
+-   build the container, `docker build -t {tag name} .`. For example: `docker build -t bee_api:latest .`
+-   run the container, `docker run -d -v {source volume}:/{target name} -p 127.0.0.1:5001:5000 -e "CONFIG_SETTINGS=config.ProductionConfig" -e "DATABASE_DIR={database location}" {tag name}`. For example: `docker run -d -v sqlite_data:/data -e "CONFIG_SETTINGS=config.ProductionConfig" -p 127.0.0.1:5001:5000-e "DATABASE_DIR=/data" bee_api`.
 
 ### Flask Options 
 
@@ -84,4 +84,4 @@ Error: No such command "command".
 
 Then:
 
-- Confirm `FLASK_APP` is set to the proper executable, such as `main.py`.
+-   Confirm `FLASK_APP` is set to the proper executable, such as `main.py`.
