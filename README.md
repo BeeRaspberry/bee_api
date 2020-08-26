@@ -14,7 +14,9 @@ The following assumes you're using `sqlite` for your database.
 ### Running Locally
 
 -   create a virtualenv
+
 -   run ```pip install -r requirements.txt```
+
 -   set `FLASK_APP` to `main.py`
     -   Linux and OSX, ```export FLASK_APP=main.py```
     -   Windows, ```set FLASK_APP=main.py```
