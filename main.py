@@ -6,7 +6,6 @@ from flask_fixtures import load_fixtures
 import click
 from app import (app, db)
 
-
 @app.cli.command('seed')
 @click.argument('seed_dir', default='seed')
 def seed_command(seed_dir):

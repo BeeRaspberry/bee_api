@@ -15,10 +15,29 @@ The following assumes you're using `sqlite` for your database.
 
 -   create a virtualenv
 -   run ```pip install -r requirements.txt```
--   if using Windows, run ```set FLASK_APP=main.py```, else ```export FLASK_APP=main.py```
+-   set `FLASK_APP` to `main.py`
+     -   Linux and OSX, ```export FLASK_APP=main.py```
+     -   Windows, ```set FLASK_APP=main.py```
+     -   Powershell (Visual Studio Code), ```$env:FLASK_APP='main.py'```
+-   run ```flask db upgrade``` to setup database
+-   run ```flask seed``` to populate Country and State/Provinces tables
 -   run ```flask run```
 
-You should be able to access the `graphql` console via `http://127.0.0.1:5000`
+Access the `graphql` console via `http://127.0.0.1:5000/graphql`
+
+Sample Query
+```json
+{
+  countryList {
+    edges {
+      node {
+        id
+        shortName
+      }
+    }
+  }
+}
+```
 
 ### Running a Docker container
 
@@ -30,10 +49,8 @@ If you plan on persisting data between runs then you need to create a Docker vol
 
 ### Flask Options 
 
-Two additional, `flask` commands exist for prepping the database. 
-
--   `initdb` creates the table schema for the application. Shouldn't be needed.
--   `seed` populates the database with data found in the directory specified. Usage: `flask seed {load files directory}`. It's not intended to do updates, only initial data load.
+`flask seed` seeds the Country and State/Provinces tables in the database. 
+Usage: `flask seed {load files directory}`, defaults to 'seed' directory. NOTE: 'seed' option isn't intended to update tables, only initial data loads.
 
 ## Deploying using Helm
 ### Local Helm Chart

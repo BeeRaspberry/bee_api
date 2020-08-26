@@ -22,7 +22,7 @@ jobs:
         git config user.name "$GITHUB_ACTOR"
         git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
         echo ::set-env name=VERSION_CHANGE::0
-        echo ::set-env name=APP_SETTINGS::"config-sample.TestingConfig"
+        echo ::set-env name=CONFIG_FILE::"${GITHUB_WORKFLOW}/config-sample.cfg"
 
     - name: Set up Python 3.7
       uses: actions/setup-python@v1
@@ -42,22 +42,23 @@ jobs:
         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
-    - name: Test with pytest
-      run: |
-        pip install -r test_requirements.txt
-        coverage run -m pytest --junitxml=test-results/test-results.xml
-
-    - name: Generate reports
-      run: |
-        coverage report
-        coverage xml -o test-results/coverage.xml
-        coverage html
-
-    - name: Publish reports
-      env:
-        CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
-      run: |
-        python-codacy-coverage -r test-results/coverage.xml
+#    - name: Test with pytest
+#      run: |
+#        sqlite3 bee.db
+#        pip install -r test_requirements.txt
+#        coverage run -m pytest --junitxml=test-results/test-results.xml
+#
+#    - name: Generate reports
+#      run: |
+#        coverage report
+#        coverage xml -o test-results/coverage.xml
+#        coverage html
+#
+#    - name: Publish reports
+#      env:
+#        CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
+#      run: |
+#        python-codacy-coverage -r test-results/coverage.xml
 
 # Following logic updates the value in VERSION automatically, on 'master'
 # Assume since the developer didn't change the version then this is a minor change.

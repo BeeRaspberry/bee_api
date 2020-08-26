@@ -24,7 +24,7 @@ ENV FLASK_APP=main.py
 # /dev/shm removes the deadlock waiting for a file to write to
 # --accesslog-file=-   ---> write to standard out
 # --log-file=-   ---> write errors to standard err
-ENV GUNICORN_CMD_ARGS="--bind=0.0.0.0 --workers=2 --threads=2 --worker-tmp-dir /dev/shm --access-logfile=- --log-file=-"
+ENV GUNICORN_CMD_ARGS="--bind=0.0.0.0:8000 --workers=2 --threads=2 --worker-tmp-dir /dev/shm --access-logfile=- --log-file=-"
 
 USER www-data:www-data
 CMD ["gunicorn", "main:app"]
