@@ -91,29 +91,20 @@ jobs:
         docker build . --tag "bee-api:latest"
         docker tag bee-api:latest "bee-api:${{ env.TAG_NAME }}"
 
-    - name: Scan image
-      uses: anchore/scan-action@master
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
       with:
-        image-reference: "bee-api:latest"
-        fail-build: true
+        image-ref: 'bee-api:latest'
+        format: 'template'
+        exit-code: '1'
+        ignore-unfixed: true
+        severity: 'CRITICAL,HIGH'
+        output: 'trivy-results.sarif'
 
-    - name: Upload Scan Vulnerabilities Results
-      uses: actions/upload-artifact@v2
+    - name: Upload Trivy scan results to GitHub Security tab
+      uses: github/codeql-action/upload-sarif@v1
       with:
-        name: vulnerabilities
-        path: anchore-reports/vulnerabilities.json 
-
-    - name: Upload Scan Policy Evaluation Results
-      uses: actions/upload-artifact@v2
-      with:
-        name: policy_evaluation
-        path: anchore-reports/policy_evaluation.json 
-
-    - name: Upload Scan Content Results
-      uses: actions/upload-artifact@v2
-      with:
-        name: content
-        path: anchore-reports/content.json 
+        sarif_file: 'trivy-results.sarif'
         
     - name: Push changes to master
       if: env.VERSION_CHANGE == 1 && github.ref == 'refs/heads/master'
