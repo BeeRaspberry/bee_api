@@ -5,15 +5,13 @@ from flask_fixtures import load_fixtures
 from flask_fixtures.loaders import JSONLoader
 from app import app
 from database import db
-from classes import User, Role
+from classes import (User, Role)
 from datetime import datetime
 
 import unittest
 
 class BeeWebTestCase(unittest.TestCase):
-    def create_user_token(self, account={'email': 'joe@gmail.com',
-                                         'password': 'test'},
-                                roles='user'):
+    def create_user_token(self, account, roles):
         if 'firstName' in account:
             firstName = account['firstName']
         else:
@@ -66,8 +64,8 @@ class BeeWebTestCase(unittest.TestCase):
 
     def setUp(self):
         app_settings = os.getenv(
-            'APP_SETTINGS',
-            'bee_api.config.TestingConfig'
+            'CONFIG_FILE',
+            'config.cfg'
         )
         app.config.from_object(app_settings)
 
