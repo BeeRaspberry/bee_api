@@ -5,6 +5,7 @@ on:
     paths-ignore:
     - '.github/workflows/**'
     - 'README.md'
+    - '.circleci/config.yml'
     - 'hooks/**'
 
 jobs:

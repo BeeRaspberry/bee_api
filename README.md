@@ -22,6 +22,13 @@ The following assumes you're using `sqlite` for your database.
     -   Windows, ```set FLASK_APP=main.py```
     -   Powershell (Visual Studio Code), ```$env:FLASK_APP='main.py'```
 
+-   set ```CONFIG_FILE``` to point to the config file containing the settings.
+    -   Linux and OSX, ```export FLASK_APP=main.py```
+    -   Windows, ```set FLASK_APP=main.py```
+    -   Powershell (Visual Studio Code), ```$env:FLASK_APP='main.py'```
+
+-   create a database in the location specified in the settings file.
+
 -   run ```flask db upgrade``` to setup database
 
 -   run ```flask seed``` to populate Country and State/Provinces tables

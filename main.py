@@ -1,10 +1,17 @@
 from os.path import (join, exists, abspath, dirname)
 from glob import glob
 from sqlalchemy.exc import *
+from sqlalchemy import create_engine
+from sqlalchemy_utils import database_exists, create_database
 from flask_fixtures.loaders import JSONLoader
 from flask_fixtures import load_fixtures
 import click
 from app import (app, db)
+
+@app.cli.command('initdb')
+def init_db():
+    db.create_all()
+
 
 @app.cli.command('seed')
 @click.argument('seed_dir', default='seed')
