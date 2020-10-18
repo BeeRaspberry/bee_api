@@ -1,4 +1,5 @@
 import json
+import requests
 from tests.support.assertions import assert_valid_schema
 
 def run_query(uri, query, statusCode, headers):
