@@ -20,6 +20,7 @@ on:
     - 'README.md'
     - '.circleci/config.yml'
     - 'hooks/**'
+    - 'tests/**'
 
 jobs:
   build:
@@ -138,7 +139,7 @@ jobs:
         tags: "latest,${{ env.TAG_NAME }}"
 
     - name: Notify Helm Chart Repo of the Commit
-      if: 'refs/heads/master'
+      if: github.ref == 'refs/heads/master'
       run: |
         API_VERSION=$(cat VERSION)
         curl -X POST https://api.github.com/repos/BeeRaspberry/helm-charts/dispatches \
