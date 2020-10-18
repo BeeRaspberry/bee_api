@@ -1,3 +1,16 @@
+# The flow is:
+#  - all branches:
+#      - install dependencices
+#      - lint code
+#      - run tests
+#      - publish test results
+#      - build docker image
+#      - scan docker image for vulnerabilities
+#  - master branch: Includes all the steps above
+#      - checks to see if VERSION file was increment, if not increments
+#        and pushes the file to master
+#      - push the docker image to Docker Hub
+#      - notify 'helm' repo of the changes
 name: build
 
 on: 
@@ -43,47 +56,24 @@ jobs:
         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
-#    - name: Test with pytest
-#      run: |
-#        sqlite3 bee.db
-#        pip install -r test_requirements.txt
-#        coverage run -m pytest --junitxml=test-results/test-results.xml
-#
-#    - name: Generate reports
-#      run: |
-#        coverage report
-#        coverage xml -o test-results/coverage.xml
-#        coverage html
-#
-#    - name: Publish reports
-#      env:
-#        CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
-#      run: |
-#        python-codacy-coverage -r test-results/coverage.xml
-
-# Following logic updates the value in VERSION automatically, on 'master'
-# Assume since the developer didn't change the version then this is a minor change.
-# Increment by one, and set patch to 0. 
-    - name: Increment Version - if same as prior commit
-      if: github.ref == 'refs/heads/master'
+    - name: Test with pytest
       run: |
-        DIFF=$(git diff HEAD^ HEAD VERSION)
-        if [[ -z "$DIFF" ]]; then
-          IFS='.'; read -r -a array <<< "$(cat VERSION)"
-          CNT="${array[1]}"
-          ((CNT++))
-          echo "${array[0]}.${CNT}.0" >VERSION
-          echo ::set-env name=VERSION_CHANGE::1
-        fi
+        sqlite3 bee.db
+        pip install -r test_requirements.txt
+        coverage run -m pytest --junitxml=test-results/test-results.xml
 
-    - name: Commit Updated Version File
-      if: env.VERSION_CHANGE == 1 && github.ref == 'refs/heads/master' 
+    - name: Generate reports
       run: |
-        git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
-        git config --local user.name ${GITHUB_ACTOR}
-        git add VERSION
-        git commit -m "Updated VERSION file"
-  
+        coverage report
+        coverage xml -o test-results/coverage.xml
+        coverage html
+
+    - name: Publish reports
+      env:
+        CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
+      run: |
+        python-codacy-coverage -r test-results/coverage.xml
+
     - name: Build image
       env:
         TAG_NAME: "$(cat VERSION)"
@@ -107,7 +97,30 @@ jobs:
       uses: github/codeql-action/upload-sarif@v1
       with:
         sarif_file: 'trivy-results.sarif'
-        
+
+# Following logic updates the value in VERSION automatically, on 'master'
+# Assume since the developer didn't change the version then this is a minor change.
+# Increment by one, and set patch to 0. 
+    - name: Increment Version - if same as prior commit
+      if: github.ref == 'refs/heads/master'
+      run: |
+        DIFF=$(git diff HEAD^ HEAD VERSION)
+        if [[ -z "$DIFF" ]]; then
+          IFS='.'; read -r -a array <<< "$(cat VERSION)"
+          CNT="${array[1]}"
+          ((CNT++))
+          echo "${array[0]}.${CNT}.0" >VERSION
+          echo ::set-env name=VERSION_CHANGE::1
+        fi
+
+    - name: Commit Updated Version File
+      if: env.VERSION_CHANGE == 1 && github.ref == 'refs/heads/master' 
+      run: |
+        git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+        git config --local user.name ${GITHUB_ACTOR}
+        git add VERSION
+        git commit -m "Updated VERSION file"
+          
     - name: Push changes to master
       if: env.VERSION_CHANGE == 1 && github.ref == 'refs/heads/master'
       uses: ad-m/github-push-action@master
@@ -122,10 +135,10 @@ jobs:
         name: beeraspberry/bee-api
         username: ${{ secrets.DOCKER_USER }}
         password: ${{ secrets.DOCKER_TOKEN }}
-        tags: "latest,${{ env.IMAGE_NAME }}"
+        tags: "latest,${{ env.TAG_NAME }}"
 
     - name: Notify Helm Chart Repo of the Commit
-      if: github.ref == 'refs/heads/master'
+      if: 'refs/heads/master'
       run: |
         API_VERSION=$(cat VERSION)
         curl -X POST https://api.github.com/repos/BeeRaspberry/helm-charts/dispatches \
