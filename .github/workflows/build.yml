@@ -36,8 +36,8 @@ jobs:
       run: |
         git config user.name "$GITHUB_ACTOR"
         git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
-        echo ::set-env name=VERSION_CHANGE::0
-        echo ::set-env name=CONFIG_FILE::"${GITHUB_WORKFLOW}/config-sample.cfg"
+        echo "VERSION_CHANGE=0" >> $GITHUB_ENV
+        echo "CONFIG_FILE=${GITHUB_WORKFLOW}/config-sample.cfg" >> $GITHUB_ENV
 
     - name: Set up Python 3.7
       uses: actions/setup-python@v1
@@ -79,7 +79,7 @@ jobs:
       env:
         TAG_NAME: "$(cat VERSION)"
       run: |
-        echo ::set-env name=IMAGE_NAME::"${{ env.TAG_NAME }}"
+        echo "IMAGE_NAME=${{ env.TAG_NAME }}" >> $GITHUB_ENV
         docker build . --tag "bee-api:latest"
         docker tag bee-api:latest "bee-api:${{ env.TAG_NAME }}"
 
@@ -111,7 +111,7 @@ jobs:
           CNT="${array[1]}"
           ((CNT++))
           echo "${array[0]}.${CNT}.0" >VERSION
-          echo ::set-env name=VERSION_CHANGE::1
+          echo "VERSION_CHANGE=1" >> $GITHUB_ENV
         fi
 
     - name: Commit Updated Version File
