@@ -1,14 +1,6 @@
-<<<<<<< HEAD
-nose==1.3.7
-nose2==0.8.0
-pytest==4.0.2
-pytest-cov==2.6.0
-testtools==2.3.0
-=======
 pytest==6.1.1
 coverage==5.3
 mock==4.0.2
 codecov==2.1.10
 pytest-cov==2.10.1
 codacy-coverage==1.3.11
->>>>>>> origin/master
