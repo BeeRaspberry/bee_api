@@ -1,0 +1,19 @@
+[
+  {
+    "table": "country",
+    "records": [
+      {
+        "name": "United States",
+        "shortName": "US"
+      },
+      {
+        "name": "Canada",
+        "shortName": "CA"
+      },
+      {
+        "name": "Mexico",
+        "shortName": "MX"
+      }
+    ]
+  }
+]

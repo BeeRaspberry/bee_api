@@ -1,19 +1,30 @@
-FROM tiangolo/uwsgi-nginx-flask:python3.7
+FROM python:3.8.5-slim AS container-image
 
-COPY ./bee_api/app /app/app/
-COPY ./bee_api/classes /app/classes/
-COPY ./bee_api/fixtures /app/fixtures/
-COPY ./bee_api/helpers /app/helpers
-COPY ./bee_api/migrations /app/migrations/
-COPY ./bee_api/config.py /app/config.py
-COPY ./bee_api/database.py /app/database.py
-COPY ./bee_api/manage.py /app/manage.py
-COPY ./bee_api/routes.py /app/routes.py
-COPY ./bee_api/run.py /app/run.py
-COPY ./bee_api/schema.py /app/schema.py
-#COPY ./bee_api/wsgi.py /app/wsgi.py
-COPY ./bee_api/uwsgi.ini /app/uwsgi.ini
-COPY ./bee_api/requirements.txt /app/requirements.txt
+RUN apt-get update && apt-get install --no-install-recommends -y \
+    gunicorn \
+    curl \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
-EXPOSE 8000
-RUN pip install -r /app/requirements.txt
+WORKDIR /app
+
+FROM container-image
+
+COPY ./requirements.txt /app/requirements.txt
+
+RUN pip install -r requirements.txt
+
+COPY migrations /app/migrations
+COPY ./app /app/app
+COPY ./seed /app/seed
+COPY ./helpers /app/helpers
+COPY ./main.py /app/main.py
+
+ENV FLASK_APP=main.py
+# /dev/shm removes the deadlock waiting for a file to write to
+# --accesslog-file=-   ---> write to standard out
+# --log-file=-   ---> write errors to standard err
+ENV GUNICORN_CMD_ARGS="--bind=0.0.0.0:8000 --workers=2 --threads=2 --worker-tmp-dir /dev/shm --access-logfile=- --log-file=-"
+
+USER www-data:www-data
+CMD ["gunicorn", "main:app"]

@@ -2,12 +2,10 @@
 **/.idea/
 
 **/__pycache__/
-**/.pytest_cache/
 config.py
-config.cfg
 
 .DS_Store
-.venv
+.env
 .flaskenv
 *.pyc
 *.pyo
@@ -33,9 +31,6 @@ test-reports/
 # VsCode
 .vscode/
 ~/virtualenvs
-scripts
-lib
-pyvenv.cfg
 
 # Databases
 *.db

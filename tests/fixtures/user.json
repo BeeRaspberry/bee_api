@@ -1,0 +1,15 @@
+[
+  {
+    "table": "user",
+    "records": [
+      {
+        "firstName": "Mickey",
+        "lastName": "Mouse",
+        "email": "mm@disney.com",
+        "phoneNumber": "7812175265",
+        "locationId": 1,
+        "password": "test124"
+      }
+    ]
+  }
+]

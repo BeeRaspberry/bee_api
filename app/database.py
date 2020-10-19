@@ -1,28 +1,81 @@
 import datetime
-from sqlalchemy import (Column, Integer, ForeignKey, DateTime, String,
-                        BOOLEAN)
+from sqlalchemy import (Column, Integer, String, Numeric, BOOLEAN,
+                        ForeignKey, DateTime)
 from sqlalchemy.orm import (relationship, backref)
 from flask_security import (UserMixin, RoleMixin)
-from database import Base
 
-__all__ = ['Role', 'RolesUsers', 'RoleMixin', 'User']
+from app import db
 
 
-class RolesUsers(Base):
+class Country(db.Model):
+    __tablename__ = 'country'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String(200))
+    shortName = Column(String(10))
+
+
+class StateProvince(db.Model):
+    __tablename__ = 'stateProvince'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    countryId = Column(Integer, ForeignKey('country.id'))
+    country = relationship('Country', backref='stateProvinces')
+    name = Column(String(200))
+    abbreviation = Column(String(10))
+
+    def __repr__(self):
+        return self.name
+
+
+class Location(db.Model):
+    __tablename__ = 'location'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    street_address = Column(String(200))
+    city = Column(String(200))
+    postal_code = Column(String(20))
+    stateProvinceId = Column(Integer, ForeignKey('stateProvince.id'))
+    state_province = relationship('StateProvince', backref='location')
+
+
+class Hive(db.Model):
+    __tablename__ = "hive"
+    id = Column(Integer, primary_key=True)
+    ownerId = Column(Integer, ForeignKey('user.id'))
+    owner = relationship('User', backref='hives')
+# Hive location may differ from the location of the bee keeper
+    locationId = Column(Integer, ForeignKey('location.id'))
+    location = relationship('Location', backref='hives')
+    date_created = Column(DateTime, default=datetime.datetime.utcnow)
+    last_update = Column(DateTime, default=datetime.datetime.utcnow)
+#    door_open = Column(Boolean, server_default=True)
+
+
+class HiveData(db.Model):
+    __tablename__ = "hiveData"
+    id = Column(Integer, primary_key=True)
+    hiveId = Column(Integer, ForeignKey('hive.id'))
+    hive = relationship('Hive', backref='hiveData')
+    date_created = Column(DateTime, default=datetime.datetime.utcnow)
+    temperature = Column(Numeric)
+    humidity = Column(Numeric)
+    sensor = Column(Integer)
+    outdoor = Column(BOOLEAN)
+
+
+class RolesUsers(db.Model):
     __tablename__ = 'roles_users'
     id = Column(Integer(), primary_key=True)
     user_id = Column('user_id', Integer(), ForeignKey('user.id'))
     role_id = Column('role_id', Integer(), ForeignKey('role.id'))
 
 
-class Role(Base, RoleMixin):
+class Role(db.Model, RoleMixin):
     __tablename__ = 'role'
     id = Column(Integer(), primary_key=True)
     name = Column(String(80), unique=True)
     description = Column(String(255))
 
 
-class User(Base, UserMixin):
+class User(db.Model, UserMixin):
     __tablename__ = 'user'
     id = Column(Integer, primary_key=True)
     email = Column(String(255), unique=True)
@@ -50,7 +103,7 @@ class User(Base, UserMixin):
 #        self.password = generate_password_hash(password)
 
 
-class BlacklistToken(Base):
+class BlacklistToken(db.Model):
     """
     Token Model for storing JWT tokens
     """

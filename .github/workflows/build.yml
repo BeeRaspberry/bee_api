@@ -1,0 +1,149 @@
+# The flow is:
+#  - all branches:
+#      - install dependencices
+#      - lint code
+#      - run tests
+#      - publish test results
+#      - build docker image
+#      - scan docker image for vulnerabilities
+#  - master branch: Includes all the steps above
+#      - checks to see if VERSION file was increment, if not increments
+#        and pushes the file to master
+#      - push the docker image to Docker Hub
+#      - notify 'helm' repo of the changes
+name: build
+
+on: 
+  push:
+    paths-ignore:
+    - '.github/workflows/**'
+    - 'README.md'
+    - '.circleci/config.yml'
+    - 'hooks/**'
+    - 'tests/**'
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        fetch-depth: 0
+
+    - name: Configure Job
+      run: |
+        git config user.name "$GITHUB_ACTOR"
+        git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+        echo ::set-env name=VERSION_CHANGE::0
+        echo ::set-env name=CONFIG_FILE::"${GITHUB_WORKFLOW}/config-sample.cfg"
+
+    - name: Set up Python 3.7
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.7
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Lint with flake8
+      run: |
+        pip install flake8
+        # stop the build if there are Python syntax errors or undefined names
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
+    - name: Test with pytest
+      run: |
+        sqlite3 bee.db
+        pip install -r test_requirements.txt
+        coverage run -m pytest --junitxml=test-results/test-results.xml
+
+    - name: Generate reports
+      run: |
+        coverage report
+        coverage xml -o test-results/coverage.xml
+        coverage html
+
+    - name: Publish reports
+      env:
+        CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
+      run: |
+        python-codacy-coverage -r test-results/coverage.xml
+
+    - name: Build image
+      env:
+        TAG_NAME: "$(cat VERSION)"
+      run: |
+        echo ::set-env name=IMAGE_NAME::"${{ env.TAG_NAME }}"
+        docker build . --tag "bee-api:latest"
+        docker tag bee-api:latest "bee-api:${{ env.TAG_NAME }}"
+
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: 'bee-api:latest'
+        format: 'template'
+        template: '@/contrib/sarif.tpl'
+        exit-code: '1'
+        ignore-unfixed: true
+        severity: 'CRITICAL,HIGH'
+        output: 'trivy-results.sarif'
+
+    - name: Upload Trivy scan results to GitHub Security tab
+      uses: github/codeql-action/upload-sarif@v1
+      with:
+        sarif_file: 'trivy-results.sarif'
+
+# Following logic updates the value in VERSION automatically, on 'master'
+# Assume since the developer didn't change the version then this is a minor change.
+# Increment by one, and set patch to 0. 
+    - name: Increment Version - if same as prior commit
+      if: github.ref == 'refs/heads/master'
+      run: |
+        DIFF=$(git diff HEAD^ HEAD VERSION)
+        if [[ -z "$DIFF" ]]; then
+          IFS='.'; read -r -a array <<< "$(cat VERSION)"
+          CNT="${array[1]}"
+          ((CNT++))
+          echo "${array[0]}.${CNT}.0" >VERSION
+          echo ::set-env name=VERSION_CHANGE::1
+        fi
+
+    - name: Commit Updated Version File
+      if: env.VERSION_CHANGE == 1 && github.ref == 'refs/heads/master' 
+      run: |
+        git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+        git config --local user.name ${GITHUB_ACTOR}
+        git add VERSION
+        git commit -m "Updated VERSION file"
+          
+    - name: Push changes to master
+      if: env.VERSION_CHANGE == 1 && github.ref == 'refs/heads/master'
+      uses: ad-m/github-push-action@master
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        force: true
+
+    - name: Publish to Registry
+      if: github.ref == 'refs/heads/master'
+      uses: elgohr/Publish-Docker-Github-Action@master
+      with:
+        name: beeraspberry/bee-api
+        username: ${{ secrets.DOCKER_USER }}
+        password: ${{ secrets.DOCKER_TOKEN }}
+        tags: "latest,${{ env.TAG_NAME }}"
+
+    - name: Notify Helm Chart Repo of the Commit
+      if: github.ref == 'refs/heads/master'
+      run: |
+        API_VERSION=$(cat VERSION)
+        curl -X POST https://api.github.com/repos/BeeRaspberry/helm-charts/dispatches \
+        -H 'Accept: application/vnd.github.everest-preview+json' \
+        -H 'Content-Type: application/json' \
+        -u ${{ secrets.ACCESS_TOKEN_REPO }} \
+        --data '{"event_type": "version_change", "client_payload": { "repository": "'"$GITHUB_REPOSITORY"'", "version": "'${API_VERSION}'" }}'

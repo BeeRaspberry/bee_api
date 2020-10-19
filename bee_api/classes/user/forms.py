@@ -8,5 +8,6 @@ class UserRegisterForm(RegisterForm):
 
 
 class UserLoginForm(LoginForm):
-    firstName = StringField('last_name')
-    first_name = StringField('first_name')
+    lastName = StringField('last_name')
+    firstName = StringField('first_name')
+    password = PasswordField('password')

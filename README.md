@@ -1,47 +1,94 @@
-# bee_api
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/8dfc45c82bde4e4aa01d78b755090bd0)](https://app.codacy.com/app/erikdeirdre/bee_api?utm_source=github.com&utm_medium=referral&utm_content=BeeRaspberry/bee_api&utm_campaign=Badge_Grade_Dashboard)
-[![Build Status](https://travis-ci.org/BeeRaspberry/bee_api.svg?branch=master)](https://travis-ci.org/BeeRaspberry/bee_api)
-[![Coverage Status](https://coveralls.io/repos/github/BeeRaspberry/bee_api/badge.svg?branch=master)](https://coveralls.io/github/BeeRaspberry/bee_api?branch=master)
-[![codecov](https://codecov.io/gh/BeeRaspberry/bee_api/branch/master/graph/badge.svg)](https://codecov.io/gh/BeeRaspberry/bee_api)
-[![Total alerts](https://img.shields.io/lgtm/alerts/g/BeeRaspberry/bee_api.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/BeeRaspberry/bee_api/alerts/)
-[![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/BeeRaspberry/bee_api.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/BeeRaspberry/bee_api/context:python)
+# ![Bee Web Icon](images/beewhitecrosshatch.jpg) bee_api
+
+![GitHub issues](https://img.shields.io/github/issues/BeeRaspberry/bee_api?style=flat-square)
+![build](https://github.com/BeeRaspberry/bee_api/workflows/build/badge.svg?branch=master)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/7dcc779f81d0483d93f0e7c1c5a735e6)](https://www.codacy.com/gh/BeeRaspberry/bee_api?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=BeeRaspberry/bee_api&amp;utm_campaign=Badge_Grade)
+[![Codacy Badge](https://api.codacy.com/project/badge/Coverage/7dcc779f81d0483d93f0e7c1c5a735e6)](https://www.codacy.com/gh/BeeRaspberry/bee_api?utm_source=github.com&utm_medium=referral&utm_content=BeeRaspberry/bee_api&utm_campaign=Badge_Coverage)
 
 This repo provides the API backend for the web front-end. 
 
-## Work in Progress
+## Usage
 
-## Setup
-Notes for myself, as I forget everything.
+The following assumes you're using `sqlite` for your database.
 
-In order to get `flask db migrate` to work, add the following to `env.py` residing in the `migrations` folder.
+### Running Locally
 
-```python
-from sqlalchemy import engine_from_config, pool
-from logging.config import fileConfig
-import logging
-import classes as models  # this line
+-   create a virtualenv
 
-config.set_main_option('sqlalchemy.url',
-                       current_app.config.get('SQLALCHEMY_DATABASE_URI'))
-target_metadata = models.Base.metadata # And this line
+-   run ```pip install -r requirements.txt```
+
+-   set `FLASK_APP` to `main.py`
+    -   Linux and OSX, ```export FLASK_APP=main.py```
+    -   Windows, ```set FLASK_APP=main.py```
+    -   Powershell (Visual Studio Code), ```$env:FLASK_APP='main.py'```
+
+-   set ```CONFIG_FILE``` to point to the config file containing the settings.
+    -   Linux and OSX, ```export FLASK_APP=main.py```
+    -   Windows, ```set FLASK_APP=main.py```
+    -   Powershell (Visual Studio Code), ```$env:FLASK_APP='main.py'```
+
+-   create a database in the location specified in the settings file.
+
+-   run ```flask db upgrade``` to setup database
+
+-   run ```flask seed``` to populate Country and State/Provinces tables
+
+-   run ```flask run```
+
+Access the `graphql` console via `http://127.0.0.1:5000/graphql`
+
+### Sample Query
+
+```json
+{
+  countryList {
+    edges {
+      node {
+        id
+        shortName
+      }
+    }
+  }
+}
 ```
 
-### Database Commands
-#### Migrations
-The usual statements
-```
-python manage.py db init
-python manage.py db migrate
-python manage.py db upgrade
-```
-#### Seeding
-The process leverages JSON files located in the `fixtures` directory. The file name corresponds with the table it updates. For instance `country.json` updates the `country` table.
+### Running a Docker container
 
+If you plan on persisting data between runs then you need to create a Docker volume, and mount it within the container.
 
-After updating the files run
+-   create a Docker volume, `docker volume create {volume name}`. For example, `docker volume create sqlite_data`.
+-   build the container, `docker build -t {tag name} .`. For example: `docker build -t bee_api:latest .`
+-   run the container, `docker run -d -v {source volume}:/{target name} -p 127.0.0.1:5001:5000 -e "CONFIG_SETTINGS=config.ProductionConfig" -e "DATABASE_DIR={database location}" {tag name}`. For example: `docker run -d -v sqlite_data:/data -e "CONFIG_SETTINGS=config.ProductionConfig" -p 127.0.0.1:5001:5000-e "DATABASE_DIR=/data" bee_api`.
+
+### Flask Options 
+
+`flask seed` seeds the Country and State/Provinces tables in the database. 
+Usage: `flask seed {load files directory}`, defaults to 'seed' directory. NOTE: 'seed' option isn't intended to update tables, only initial data loads.
+
+## Deploying using Helm
+
+### Local Helm Chart
+
+`helm install helm-charts/bee-api`
+
+### Github Pages Repo
+
+Add the repo:
+`helm repo add <repo name> https://beeraspberry.github.io/bee_api/`
+Install
+`helm install <repo name>/bee-api`
+
+## Troubleshooting
+
+If the system reports:
+
 ```bash
-python manage.py seed
-``` 
+Usage: flask [OPTIONS] COMMAND [ARGS]...
+Try "flask --help" for help.
 
+Error: No such command "command".
+```
 
+Then:
 
+-   Confirm `FLASK_APP` is set to the proper executable, such as `main.py`.
