@@ -16,7 +16,6 @@ name: build
 on: 
   push:
     paths-ignore:
-    - '.github/workflows/**'
     - 'README.md'
     - '.circleci/config.yml'
     - 'hooks/**'
@@ -37,7 +36,7 @@ jobs:
         git config user.name "$GITHUB_ACTOR"
         git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
         echo "VERSION_CHANGE=0" >> $GITHUB_ENV
-        echo "CONFIG_FILE=${GITHUB_WORKFLOW}/config-sample.cfg" >> $GITHUB_ENV
+        echo "CONFIG_FILE=${GITHUB_WORKSPACE}/config-sample.cfg" >> $GITHUB_ENV
 
     - name: Set up Python 3.7
       uses: actions/setup-python@v1
