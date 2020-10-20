@@ -56,13 +56,9 @@ jobs:
         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
-    - name: Install sqlite3
-      run: |
-        sudo apt-get install -y sqlite3 libsqlite3-dev
-
     - name: Test with pytest
       run: |
-        sqlite3 bee.db
+        sqlite3 ${GITHUB_WORKSPACE}/bee.db
         ls -l 
         pip install -r test_requirements.txt
         coverage run -m pytest --junitxml=test-results/test-results.xml
