@@ -59,6 +59,7 @@ jobs:
     - name: Test with pytest
       run: |
         sqlite3 bee.db
+        ls -l 
         pip install -r test_requirements.txt
         coverage run -m pytest --junitxml=test-results/test-results.xml
 
