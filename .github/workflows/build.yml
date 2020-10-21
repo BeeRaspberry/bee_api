@@ -11,6 +11,10 @@
 #        and pushes the file to master
 #      - push the docker image to Docker Hub
 #      - notify 'helm' repo of the changes
+
+
+#     - 'tests/**'
+#     - '.github/workflows/**'
 name: build
 
 on: 
@@ -19,7 +23,6 @@ on:
     - 'README.md'
     - '.circleci/config.yml'
     - 'hooks/**'
-    - 'tests/**'
 
 jobs:
   build:
