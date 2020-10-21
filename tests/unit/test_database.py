@@ -86,6 +86,7 @@ class TestHiveTable(unittest.TestCase):
         new_hive = Hive(owner=new_user, location=new_location)
         self.assertEqual(new_hive.location, new_location)
         self.assertEqual(new_hive.owner, new_user)
+        print(db.session.query(Hive).all())
 """
     def test_hive_all(self):
         result = db.session.query(Hive).all()
