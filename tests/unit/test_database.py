@@ -4,10 +4,6 @@ from app import (db, app)
 from app.database import (Country, StateProvince, Location, HiveData, Hive,
                           User, Role)
 
-with app.test_request_context():
-    print('Database location: {}'.format(app.config['SQLALCHEMY_DATABASE_URI']))
-    db.init_app(app)
-    db.create_all()
 
 @pytest.fixture(scope='module')
 def init_database():
@@ -16,6 +12,7 @@ def init_database():
     from flask_fixtures.loaders import JSONLoader
     from flask_fixtures import load_fixtures
 
+    print('Database location: {}'.format(app.config['SQLALCHEMY_DATABASE_URI']))
     db.drop_all()
     db.create_all()
 
@@ -70,7 +67,6 @@ class TestLocationTable(unittest.TestCase):
         location = db.session.query(Location).filter_by(city="Boston").one()
         self.assertEqual(location.stateProvinceId, 21)
 
-"""
     def test_new_location(self):
         self.assertIsNotNone(Location(city="Orleans",
                                       street_address="One Main St.",
@@ -90,7 +86,7 @@ class TestHiveTable(unittest.TestCase):
         new_hive = Hive(owner=new_user, location=new_location)
         self.assertEqual(new_hive.location, new_location)
         self.assertEqual(new_hive.owner, new_user)
-
+"""
     def test_hive_all(self):
         result = db.session.query(Hive).all()
         self.assertEqual(len(result), 1)
