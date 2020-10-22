@@ -1,4 +1,4 @@
-import unittest
+from unittest import TestCase
 import pytest
 from app import (db, app)
 from app.database import (Country, StateProvince, Location, HiveData, Hive,
@@ -25,8 +25,33 @@ def init_database():
     yield db
 
 
+@pytest.fixture
+def add_location():
+    def _add_location(street_address, city, postal_code, stateProvinceId):
+        temp = Location(street_address=street_address,
+                        city=city,
+                        postal_code=postal_code,
+                        stateProvinceId=stateProvinceId)
+        db.session.add(temp)
+        db.session.commit()
+        return db.session.query(Location).filter_by(postal_code=postal_code).one()
+
+    return _add_location
+
+
+@pytest.fixture(scope='module')
+def add_role():
+    def _add_role(name, description):
+        temp = Role(name=name, description=description)
+        db.session.add(temp)
+        db.session.commit()
+        return db.session.query(Role).filter_by(name=name).one()
+
+    return _add_role
+
+
 @pytest.mark.usefixtures("init_database")
-class TestCountryTable(unittest.TestCase):
+class TestCountryTable(TestCase):
     def test_country_all(self):
         result = db.session.query(Country).all()
         self.assertGreaterEqual(len(result), 3)
@@ -40,7 +65,7 @@ class TestCountryTable(unittest.TestCase):
 
 
 @pytest.mark.usefixtures("init_database")
-class TestStateProvinceTable(unittest.TestCase):
+class TestStateProvinceTable(TestCase):
     def test_state_province_all(self):
         result = db.session.query(StateProvince).all()
         self.assertGreaterEqual(len(result), 50)
@@ -58,7 +83,7 @@ class TestStateProvinceTable(unittest.TestCase):
 
 
 @pytest.mark.usefixtures("init_database")
-class TestLocationTable(unittest.TestCase):
+class TestLocationTable(TestCase):
     def test_location_all(self):
         result = db.session.query(Location).all()
         self.assertGreaterEqual(len(result), 1)
@@ -73,31 +98,27 @@ class TestLocationTable(unittest.TestCase):
                                       stateProvinceId=10,
                                       postal_code="12345"))
 
-
+ 
 @pytest.mark.usefixtures('init_database')
-class TestHiveTable(unittest.TestCase):
+class TestHiveTable(TestCase):
     def test_new_hive(self):
-        new_location = Location(street_address='123 Main St.',
-                                city='Somewhere',
-                                postal_code='01234',
-                                stateProvinceId=10)
+        new_location = Location(street_address="street_address",
+                                city="Boston",
+                                postal_code="23456",
+                                stateProvinceId=11)
         new_user = User(email="test@test.com")
-
         new_hive = Hive(owner=new_user, location=new_location)
+        db.session.add(new_location)
+        db.session.add(new_user)
+        db.session.add(new_hive)
+        db.session.commit()
+
         self.assertEqual(new_hive.location, new_location)
         self.assertEqual(new_hive.owner, new_user)
-        print(db.session.query(Hive).all())
-"""
-    def test_hive_all(self):
         result = db.session.query(Hive).all()
         self.assertEqual(len(result), 1)
 
-
-@pytest.fixture(scope='module')
-def new_role():
-    return [Role(name='queen', description='Queen bee')]
-
-
+"""
 @pytest.fixture(scope='module')
 @pytest.mark.usefixtures('new_location', 'new_role')
 def new_user(new_location, new_role):
