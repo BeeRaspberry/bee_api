@@ -30,9 +30,7 @@ jobs:
           name: Run Tests
           command: |
             export CONFIG_FILE=./config-sample.cfg
-            pwd
             ls -l
-            ls -l "${CIRCLE_WORKING_DIRECTORY}"
             coverage run -m pytest --junitxml=test-results/test-results.xml
 
       - run:
