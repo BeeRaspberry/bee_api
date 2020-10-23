@@ -5,8 +5,6 @@ orbs:
 
 jobs:
   build:
-    environment:
-      CONFIG_FILE: ${CIRCLE_WORKING_DIRECTORY}/config-sample.cfg
     executor: python/default
     steps:
       - checkout
@@ -23,6 +21,7 @@ jobs:
       - run:
           name: Run Tests
           command: |
+            export CONFIG_FILE=${CIRCLE_WORKING_DIRECTORY}/config-sample.cfg
             coverage run -m pytest --junitxml=test-results/test-results.xml
 
       - run:
