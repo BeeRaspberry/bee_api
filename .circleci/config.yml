@@ -23,6 +23,8 @@ jobs:
           command: |
             export CONFIG_FILE=${CIRCLE_WORKING_DIRECTORY}/config-sample.cfg
             echo $CONFIG_FILE
+            pwd
+            ls -l
             ls -l ${CIRCLE_WORKING_DIRECTORY}
             coverage run -m pytest --junitxml=test-results/test-results.xml
 
