@@ -29,8 +29,11 @@ jobs:
       - run:
           name: Run Tests
           command: |
-            export CONFIG_FILE=./config-sample.cfg
+            echo 'export CONFIG_FILE=${CIRCLE_WORKING_DIRECTORY}/config-sample.cfg' >> $BASH_ENV
+            source $BASH_ENV
+            pwd
             ls -l
+            ls -l $CIRCLE_WORKING_DIRECTORY
             coverage run -m pytest --junitxml=test-results/test-results.xml
 
       - run:
