@@ -29,8 +29,8 @@ jobs:
       - run:
           name: Run Tests
           command: |
-            ls -l
-            export CONFIG_FILE=$(pwd))/config-sample.cfg
+            export CONFIG_FILE=$(pwd)/config-sample.cfg
+            echo $CONFIG_FILE
             coverage run -m pytest --junitxml=test-results/test-results.xml
 
       - run:
