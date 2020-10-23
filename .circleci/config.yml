@@ -22,6 +22,22 @@ jobs:
             pytest --version
           name: Test
 
+      - run:
+          name: Run Tests
+          command: |
+            coverage run -m pytest --junitxml=test-results/test-results.xml
+
+      - run:
+          name: Generate reports
+          command: |
+            coverage report
+            coverage xml -o test-results/coverage.xml
+            coverage html
+            ls -l
+
+      - store_artifacts:
+          path: test-results/coverage.xml
+
 workflows:
   main:
     jobs:

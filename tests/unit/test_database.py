@@ -6,7 +6,7 @@ from app.database import (Country, StateProvince, Location, HiveData, Hive,
 
 
 @pytest.fixture(scope='module')
-def init_database():
+def init_db():
     from os.path import (abspath, dirname, join)
     from glob import glob
     from flask_fixtures.loaders import JSONLoader
@@ -22,103 +22,35 @@ def init_database():
         fixtures = JSONLoader().load(fixture_file)
         load_fixtures(db, fixtures)
 
-    yield db
+    return db
 
 
 @pytest.fixture
-def add_location():
+def new_location(init_db):
     def _add_location(street_address, city, postal_code, stateProvinceId):
         temp = Location(street_address=street_address,
                         city=city,
                         postal_code=postal_code,
                         stateProvinceId=stateProvinceId)
-        db.session.add(temp)
-        db.session.commit()
-        return db.session.query(Location).filter_by(postal_code=postal_code).one()
+        init_db.session.add(temp)
+        init_db.session.commit()
+        return init_db.session.query(Location).filter_by(
+            postal_code=postal_code).one()
 
     return _add_location
 
 
 @pytest.fixture(scope='module')
-def add_role():
+def new_role(init_db):
     def _add_role(name, description):
         temp = Role(name=name, description=description)
-        db.session.add(temp)
-        db.session.commit()
-        return db.session.query(Role).filter_by(name=name).one()
+        init_db.session.add(temp)
+        init_db.session.commit()
+        return init_db.session.query(Role).filter_by(name=name).one()
 
     return _add_role
 
 
-@pytest.mark.usefixtures("init_database")
-class TestCountryTable(TestCase):
-    def test_country_all(self):
-        result = db.session.query(Country).all()
-        self.assertGreaterEqual(len(result), 3)
-
-    def test_country_short_name(self):
-        result = db.session.query(Country).filter_by(name="Canada").one()
-        self.assertEqual(result.shortName, "CA")
-
-    def test_new_country(self):
-        self.assertIsNotNone(Country(name='Great Britain', shortName="GB"))
-
-
-@pytest.mark.usefixtures("init_database")
-class TestStateProvinceTable(TestCase):
-    def test_state_province_all(self):
-        result = db.session.query(StateProvince).all()
-        self.assertGreaterEqual(len(result), 50)
-
-    def test_state_province_abbreviation(self):
-        result = db.session.query(StateProvince).filter_by(
-            name="Washington").one()
-        self.assertEqual(result.abbreviation, "WA")
-
-    def test_new_state_province(self):
-        country = db.session.query(Country).filter_by(name="Canada").one()
-        self.assertIsNotNone(StateProvince(name="Mickey Land",
-                                           abbreviation="ML",
-                                           country=country))
-
-
-@pytest.mark.usefixtures("init_database")
-class TestLocationTable(TestCase):
-    def test_location_all(self):
-        result = db.session.query(Location).all()
-        self.assertGreaterEqual(len(result), 1)
-
-    def test_location_city(self):
-        location = db.session.query(Location).filter_by(city="Boston").one()
-        self.assertEqual(location.stateProvinceId, 21)
-
-    def test_new_location(self):
-        self.assertIsNotNone(Location(city="Orleans",
-                                      street_address="One Main St.",
-                                      stateProvinceId=10,
-                                      postal_code="12345"))
-
- 
-@pytest.mark.usefixtures('init_database')
-class TestHiveTable(TestCase):
-    def test_new_hive(self):
-        new_location = Location(street_address="street_address",
-                                city="Boston",
-                                postal_code="23456",
-                                stateProvinceId=11)
-        new_user = User(email="test@test.com")
-        new_hive = Hive(owner=new_user, location=new_location)
-        db.session.add(new_location)
-        db.session.add(new_user)
-        db.session.add(new_hive)
-        db.session.commit()
-
-        self.assertEqual(new_hive.location, new_location)
-        self.assertEqual(new_hive.owner, new_user)
-        result = db.session.query(Hive).all()
-        self.assertEqual(len(result), 1)
-
-"""
 @pytest.fixture(scope='module')
 @pytest.mark.usefixtures('new_location', 'new_role')
 def new_user(new_location, new_role):
@@ -133,11 +65,67 @@ def new_hive(new_location, new_user):
     return Hive(location=new_location, owner=new_user)
 
 
-@pytest.mark.usefixtures('new_role')
-def test_new_role(new_role):
-    self.assertEqual(new_role[0].name, 'queen')
-    self.assertEqual(new_role[0].description, 'Queen bee')
+def test_country_all(init_db):
+    result = init_db.session.query(Country).all()
+    TestCase().assertGreaterEqual(len(result), 3)
 
+def test_country_short_name(init_db):
+    result = init_db.session.query(Country).filter_by(name="Canada").one()
+    TestCase().assertEqual(result.shortName, "CA")
+
+def test_new_country(init_db):
+    TestCase().assertIsNotNone(Country(name='Great Britain', shortName="GB"))
+
+def test_state_province_all(init_db):
+    result = init_db.session.query(StateProvince).all()
+    TestCase().assertGreaterEqual(len(result), 50)
+
+def test_state_province_abbreviation(init_db):
+    result = init_db.session.query(StateProvince).filter_by(
+        name="Washington").one()
+    TestCase().assertEqual(result.abbreviation, "WA")
+
+def test_new_state_province(init_db):
+    country = init_db.session.query(Country).filter_by(name="Canada").one()
+    TestCase().assertIsNotNone(StateProvince(name="Mickey Land",
+                                   abbreviation="ML",
+                                   country=country))
+
+def test_location_all(init_db):
+    result = init_db.session.query(Location).all()
+    TestCase().assertGreaterEqual(len(result), 1)
+
+def test_location_city(init_db):
+    location = init_db.session.query(Location).filter_by(city="Boston").one()
+    TestCase().assertEqual(location.stateProvinceId, 21)
+
+def test_new_location(init_db):
+    TestCase().assertIsNotNone(Location(city="Orleans",
+                                    street_address="One Main St.",
+                                    stateProvinceId=10,
+                                    postal_code="12345"))
+
+def test_new_hive(init_db):
+    new_location = Location(street_address="street_address",
+                            city="Boston",
+                            postal_code="23456",
+                            stateProvinceId=11)
+    new_user = User(email="test@test.com")
+    new_hive = Hive(owner=new_user, location=new_location)
+    init_db.session.add(new_location)
+    init_db.session.add(new_user)
+    init_db.session.add(new_hive)
+    init_db.session.commit()
+
+    result = init_db.session.query(Hive).all()
+    TestCase().assertEqual(len(result), 1)
+    TestCase().assertEqual(result[0].location, new_location)
+    TestCase().assertEqual(result[0].owner, new_user)
+
+"""
+def test_new_role(new_role):
+    TestCase().assertEqual(new_role[0].name, 'queen')
+    TestCase().assertEqual(new_role[0].description, 'Queen bee')
 
 @pytest.mark.usefixtures('new_user', 'new_role', 'new_location')
 def test_new_user(new_user, new_role, new_location):
