@@ -5,6 +5,8 @@ orbs:
 
 jobs:
   build:
+    environment:
+      CONFIG_FILE: ${CIRCLE_WORKING_DIRECTORY}/config-sample.cfg
     executor: python/default
     steps:
       - checkout
