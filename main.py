@@ -1,8 +1,6 @@
 from os.path import (join, exists, abspath, dirname)
 from glob import glob
 from sqlalchemy.exc import *
-from sqlalchemy import create_engine
-from sqlalchemy_utils import database_exists, create_database
 from flask_fixtures.loaders import JSONLoader
 from flask_fixtures import load_fixtures
 import click
