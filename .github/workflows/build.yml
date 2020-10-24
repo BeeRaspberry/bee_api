@@ -12,9 +12,6 @@
 #      - push the docker image to Docker Hub
 #      - notify 'helm' repo of the changes
 
-
-#     - 'tests/**'
-#     - '.github/workflows/**'
 name: build
 
 on: 
@@ -23,6 +20,8 @@ on:
     - 'README.md'
     - '.circleci/config.yml'
     - 'hooks/**'
+    - 'tests/**'
+    - '.github/workflows/**'
 
 jobs:    
   build:
@@ -77,12 +76,8 @@ jobs:
         python-codacy-coverage -r test-results/coverage.xml
 
     - name: Build image
-      env:
-        TAG_NAME: "$(cat VERSION)"
       run: |
-        echo "IMAGE_NAME=${{ env.TAG_NAME }}" >> $GITHUB_ENV
         docker build . --tag "bee-api:latest"
-        docker tag bee-api:latest "bee-api:${{ env.TAG_NAME }}"
 
     - name: Run Trivy vulnerability scanner
       uses: aquasecurity/trivy-action@master
@@ -130,6 +125,10 @@ jobs:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         force: true
 
+    - name: Display the version
+      run: |
+        cat VERSION
+
     - name: Publish to Registry
       if: github.ref == 'refs/heads/master'
       uses: elgohr/Publish-Docker-Github-Action@master
@@ -137,7 +136,7 @@ jobs:
         name: beeraspberry/bee-api
         username: ${{ secrets.DOCKER_USER }}
         password: ${{ secrets.DOCKER_TOKEN }}
-        tags: "latest,${{ env.TAG_NAME }}"
+        tags: "latest,$(cat VERSION)"
 
     - name: Notify Helm Chart Repo of the Commit
       if: github.ref == 'refs/heads/master'
