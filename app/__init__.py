@@ -26,16 +26,16 @@ db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
 CORS(app)
-#paranoid = Paranoid(app)
-#paranoid.redirect_view = '/'
+# paranoid = Paranoid(app)
+# paranoid.redirect_view = '/'
 #
 #
-#if not app.debug and not app.testing and not app.config['SSL_DISABLE']:
+# if not app.debug and not app.testing and not app.config['SSL_DISABLE']:
 #    from flask.ext.sslify import SSLify
 #    SSLify(app)
 #
-#user_datastore = SQLAlchemyUserDatastore(db, User, Role)
-#security = Security(app, user_datastore,
+# user_datastore = SQLAlchemyUserDatastore(db, User, Role)
+# security = Security(app, user_datastore,
 #                    login_form=UserLoginForm)
 
 from app import routes
