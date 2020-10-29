@@ -125,18 +125,12 @@ jobs:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         force: true
 
-    - name: Display the version
-      run: |
-        cat VERSION
-
     - name: Publish to Registry
       if: github.ref == 'refs/heads/master'
-      uses: elgohr/Publish-Docker-Github-Action@master
-      with:
-        name: beeraspberry/bee-api
-        username: ${{ secrets.DOCKER_USER }}
-        password: ${{ secrets.DOCKER_TOKEN }}
-        tags: "latest,$(cat VERSION)"
+      run: |
+        docker login -u ${{ secrets.DOCKER_USER }} -p ${{ secrets.DOCKER_TOKEN }}
+        docker push bee-ui:latest beeraspberry/bee-ui:latest
+        docker tag beeraspberry/bee-ui:latest beeraspberry/bee-ui:$(cat VERSION)
 
     - name: Notify Helm Chart Repo of the Commit
       if: github.ref == 'refs/heads/master'
