@@ -77,12 +77,12 @@ jobs:
 
     - name: Build image
       run: |
-        docker build . --tag "bee-api:latest"
+        docker build . --tag "beeraspberry/bee-api:latest"
 
     - name: Run Trivy vulnerability scanner
       uses: aquasecurity/trivy-action@master
       with:
-        image-ref: 'bee-api:latest'
+        image-ref: 'beeraspberry/bee-api:latest'
         format: 'template'
         template: '@/contrib/sarif.tpl'
         exit-code: '1'
@@ -130,8 +130,9 @@ jobs:
       run: |
         API_VERSION=$(cat VERSION)
         docker login -u ${{ secrets.DOCKER_USER }} -p ${{ secrets.DOCKER_TOKEN }}
-        docker push bee-ui:latest beeraspberry/bee-ui:latest
-        docker tag beeraspberry/bee-ui:latest beeraspberry/bee-ui:${API_VERSION}
+        docker tag beeraspberry/bee-api:latest beeraspberry/bee-api:${API_VERSION}
+        docker push beeraspberry/bee-api:latest
+        docker push beeraspberry/bee-api:${API_VERSION}
 
     - name: Notify Helm Chart Repo of the Commit
       if: github.ref == 'refs/heads/master'
