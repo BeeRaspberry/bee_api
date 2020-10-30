@@ -21,7 +21,8 @@ on:
     - '.circleci/config.yml'
     - 'hooks/**'
     - 'tests/**'
-#    - '.github/workflows/**'
+    - '.drone.yml'
+    - '.github/workflows/**'
 
 jobs:    
   build:
