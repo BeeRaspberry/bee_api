@@ -128,9 +128,10 @@ jobs:
     - name: Publish to Registry
       if: github.ref == 'refs/heads/master'
       run: |
+        API_VERSION=$(cat VERSION)
         docker login -u ${{ secrets.DOCKER_USER }} -p ${{ secrets.DOCKER_TOKEN }}
         docker push bee-ui:latest beeraspberry/bee-ui:latest
-        docker tag beeraspberry/bee-ui:latest beeraspberry/bee-ui:$(cat VERSION)
+        docker tag beeraspberry/bee-ui:latest beeraspberry/bee-ui:${API_VERSION}
 
     - name: Notify Helm Chart Repo of the Commit
       if: github.ref == 'refs/heads/master'
