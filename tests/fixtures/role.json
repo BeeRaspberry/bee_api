@@ -3,12 +3,19 @@
     "table": "role",
     "records": [
       {
+        "id": 1,
         "name": "user",
         "description": "User Account"
       },
       {
+        "id": 2,
         "name": "admin",
-        "description": "Administrator Account"
+        "description": "Administrator Account for administering accounts."
+      },
+      {
+        "id": 3,
+        "name": "super",
+        "description": "Administrator Account for administering ALL accounts."
       }
     ]
   }

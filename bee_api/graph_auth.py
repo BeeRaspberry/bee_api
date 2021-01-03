@@ -1,8 +1,9 @@
 import graphene
 from app import app
 from flask_graphql_auth import (AuthInfoField, GraphQLAuth, get_jwt_identity,
-                                get_raw_jwt, create_access_token, create_refresh_token,
-                                query_jwt_required, mutation_jwt_refresh_token_required,
+                                get_raw_jwt, create_access_token,
+                                create_refresh_token, query_jwt_required,
+                                mutation_jwt_refresh_token_required,
                                 mutation_jwt_required)
 
 auth = GraphQLAuth(app)
@@ -26,14 +27,27 @@ class AuthMutation(graphene.Mutation):
     class Arguments(object):
         username = graphene.String()
         password = graphene.String()
+        provider = graphene.String()
 
     access_token = graphene.String()
     refresh_token = graphene.String()
 
     @classmethod
-    def mutate(cls, _, info, username, password):
-        return AuthMutation(access_token=create_access_token(username, user_claims=user_claims),
-                            refresh_token=create_refresh_token(username, user_claims=user_claims))
+    def mutate(self, info, username, password, provider):
+        if 'email' in provider:
+            user = User.query.filter_by(username=username,
+                                        password=password).first()
+            if not user:
+                raise Exception('Authentication Failure: User is registered')
+        if 'google' in provider:
+            print('need to implement Google Signin')
+        if 'fb' in provider:
+            print('need to implement Facebook signin')
+
+        return AuthMutation(access_token=create_access_token(username,
+                            user_claims=user_claims),
+                            refresh_token=create_refresh_token(username,
+                            user_claims=user_claims))
 
 
 class ProtectedMutation(graphene.Mutation):
@@ -45,7 +59,8 @@ class ProtectedMutation(graphene.Mutation):
     @classmethod
     @mutation_jwt_required
     def mutate(cls, _, info):
-        return ProtectedMutation(message=MessageField(message="Protected mutation works"))
+        return ProtectedMutation(message=MessageField(
+                                 message="Protected mutation works"))
 
 
 class RefreshMutation(graphene.Mutation):

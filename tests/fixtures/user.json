@@ -3,12 +3,27 @@
     "table": "user",
     "records": [
       {
+        "id": 1,
         "firstName": "Mickey",
         "lastName": "Mouse",
         "email": "mm@disney.com",
         "phoneNumber": "7812175265",
         "locationId": 1,
         "password": "test124"
+      },
+      {
+        "id": 2,
+        "firstName": "Super",
+        "lastName": "User",
+        "email": "super@test.com",
+        "password": "super123"
+      },
+      {
+        "id": 3,
+        "firstName": "Admin",
+        "lastName": "User",
+        "email": "admin@test.com",
+        "password": "admin123"
       }
     ]
   }

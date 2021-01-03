@@ -2,16 +2,26 @@ import graphene
 from graphene import relay
 from graphene_sqlalchemy import (SQLAlchemyObjectType,
                                  SQLAlchemyConnectionField)
+from flask_graphql_auth import (AuthInfoField, GraphQLAuth, get_jwt_identity,
+                                get_raw_jwt, create_access_token,
+                                create_refresh_token, query_jwt_required,
+                                mutation_jwt_refresh_token_required,
+                                mutation_jwt_required)
 
 from helpers import utils
 
-from app import db
+from app import (app, db)
 from .database import (Country as CountryModel, Location as LocationModel,
                        StateProvince as StateProvinceModel, Hive as HiveModel,
-                       HiveData as HiveDataModel, User as UserModel)
+                       HiveData as HiveDataModel, User as UserModel,
+                       Role, RolesUsers)
 
 __all__ = ['CreateCountry', 'UpdateCountry', 'CreateLocation',
-           'UpdateLocation', 'CreateStateProvince', 'UpdateStateProvince']
+           'UpdateLocation', 'CreateStateProvince', 'UpdateStateProvince',
+           'LoginUser']
+
+auth = GraphQLAuth(app)
+user_claims = {"message": "VERI TAS LUX MEA"}
 
 
 def check_country(data):
@@ -280,19 +290,90 @@ def check_user(data):
     return True
 
 
-class AuthAttribute:
-    email = graphene.String(description="Email")
-    password = graphene.String(description="Password")
+class MessageField(graphene.ObjectType):
+    message = graphene.String()
 
 
-class Auth(SQLAlchemyObjectType):
+class ProtectedUnion(graphene.Union):
     class Meta:
-        model = UserModel
-        interfaces = (relay.Node, )
+        types = (MessageField, AuthInfoField)
+
+    @classmethod
+    def resolve_type(cls, instance, info):
+        return type(instance)
 
 
-class CheckAuthInput(graphene.InputObjectType, AuthAttribute):
-    pass
+class LoginUser(graphene.Mutation):
+    class Arguments(object):
+        email = graphene.String()
+        password = graphene.String()
+        provider = graphene.String()
+
+    access_token = graphene.String()
+    refresh_token = graphene.String()
+    role = graphene.String()
+    name = graphene.String()
+
+    @classmethod
+    def mutate(cls, _, info, email, password, provider):
+        if 'email' in provider:
+            user = UserModel.query.filter_by(email=email).first()
+
+        if 'google' in provider:
+            print('need to implement Google Signin')
+        if 'fb' in provider:
+            print('need to implement Facebook signin')
+
+        print(user.password)
+        print(password)
+        if not user or user.password != password:
+            raise Exception('Invalid Credentials')
+
+        user_name = None
+        if user.firstName or user.lastName:
+            user_name = "{} {}".format(user.firstName, user.lastName).strip()
+        else:
+            user_name = user.email
+
+        role = Role.query.join(RolesUsers).filter(user.id == user.id).first()
+        if not role:
+            user_role = 'user'
+        else:
+            user_role = role.name
+
+        return LoginUser(access_token=create_access_token(email,
+                         user_claims=user_claims),
+                         refresh_token=create_refresh_token(email,
+                         user_claims=user_claims),
+                         role=user_role,
+                         name=user_name
+                        )
+
+
+class ProtectedMutation(graphene.Mutation):
+    class Arguments(object):
+        token = graphene.String()
+
+    message = graphene.Field(ProtectedUnion)
+
+    @classmethod
+    @mutation_jwt_required
+    def mutate(cls, _, info):
+        return ProtectedMutation(message=MessageField(
+                                 message="Protected mutation works"))
+
+
+class RefreshMutation(graphene.Mutation):
+    class Arguments(object):
+        token = graphene.String()
+
+    new_token = graphene.String()
+
+    @classmethod
+    @mutation_jwt_refresh_token_required
+    def mutate(self, _, info):
+        current_user = get_jwt_identity()
+        return RefreshMutation(new_token=create_access_token(identity=current_user, user_claims=user_claims))
 
 
 class UserAttribute:
@@ -398,6 +479,9 @@ class Mutation(graphene.ObjectType):
     createUser = CreateUser.Field()
     updateUser = UpdateUser.Field()
     deleteUser = DeleteUser.Field()
+    loginUser = LoginUser.Field()
+    refresh = RefreshMutation.Field()
+    protected = ProtectedMutation.Field()
 #    checkAuth = CheckAuth.Field()
 
 
