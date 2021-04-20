@@ -1,5 +1,7 @@
 import graphene
+from graphene import (ObjectType, String, Union, Mutation, Field)
 from app import app
+from database import User
 from flask_graphql_auth import (AuthInfoField, GraphQLAuth, get_jwt_identity,
                                 get_raw_jwt, create_access_token,
                                 create_refresh_token, query_jwt_required,
@@ -10,11 +12,11 @@ auth = GraphQLAuth(app)
 user_claims = {"message": "VERI TAS LUX MEA"}
 
 
-class MessageField(graphene.ObjectType):
-    message = graphene.String()
+class MessageField(ObjectType):
+    message = String()
 
 
-class ProtectedUnion(graphene.Union):
+class ProtectedUnion(Union):
     class Meta:
         types = (MessageField, AuthInfoField)
 
@@ -23,14 +25,14 @@ class ProtectedUnion(graphene.Union):
         return type(instance)
 
 
-class AuthMutation(graphene.Mutation):
+class AuthMutation(Mutation):
     class Arguments(object):
-        username = graphene.String()
-        password = graphene.String()
-        provider = graphene.String()
+        username = String()
+        password = String()
+        provider = String()
 
-    access_token = graphene.String()
-    refresh_token = graphene.String()
+    access_token = String()
+    refresh_token = String()
 
     @classmethod
     def mutate(self, info, username, password, provider):
@@ -50,11 +52,11 @@ class AuthMutation(graphene.Mutation):
                             user_claims=user_claims))
 
 
-class ProtectedMutation(graphene.Mutation):
+class ProtectedMutation(Mutation):
     class Arguments(object):
-        token = graphene.String()
+        token = String()
 
-    message = graphene.Field(ProtectedUnion)
+    message = Field(ProtectedUnion)
 
     @classmethod
     @mutation_jwt_required
@@ -63,29 +65,29 @@ class ProtectedMutation(graphene.Mutation):
                                  message="Protected mutation works"))
 
 
-class RefreshMutation(graphene.Mutation):
-    class Arguments(object):
-        token = graphene.String()
+class RefreshMutation(Mutation):
+    class Arguments(ob
+        token = String()
 
-    new_token = graphene.String()
+    new_token = String()
 
     @classmethod
     @mutation_jwt_refresh_token_required
     def mutate(self, _, info):
         current_user = get_jwt_identity()
-        return RefreshMutation(new_token=create_access_token(identity=current_user, user_claims=user_claims))
+        return RefreshMutation(new_token=create_access_token(
+            identity=current_user, user_claims=user_claims))
 
 
-class Mutation(graphene.ObjectType):
+class Mutation(ObjectType):
     auth = AuthMutation.Field()
     refresh = RefreshMutation.Field()
     protected = ProtectedMutation.Field()
 
 
-class Query(graphene.ObjectType):
-    protected = graphene.Field(type=ProtectedUnion,
-                               message=graphene.String(),
-                               token=graphene.String())
+class Query(ObjectType):
+    protected = Field(type=ProtectedUnion,
+                      message=String(), token=String())
 
     @query_jwt_required
     def resolve_protected(self, info, message):
