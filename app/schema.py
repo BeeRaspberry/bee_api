@@ -1,5 +1,6 @@
 import graphene
-from graphene import (relay, Mutation, String, Field, Node, ObjectType)
+from graphene import (relay, Mutation, String, Field, Node, ObjectType,
+                      Union)
 from flask_graphql_auth import (AuthInfoField, GraphQLAuth, get_jwt_identity,
                                 get_raw_jwt, create_access_token,
                                 query_jwt_required,
@@ -29,11 +30,11 @@ def check_user(data):
     return True
 
 
-class MessageField(graphene.ObjectType):
+class MessageField(ObjectType):
     message = String()
 
 
-class ProtectedUnion(graphene.Union):
+class ProtectedUnion(Union):
     class Meta:
         types = (MessageField, AuthInfoField)
 

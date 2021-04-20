@@ -1,4 +1,5 @@
 import graphene
+
 from graphene import (ObjectType, String, Union, Mutation, Field)
 from app import app
 from database import User
@@ -26,7 +27,7 @@ class ProtectedUnion(Union):
 
 
 class AuthMutation(Mutation):
-    class Arguments(object):
+    class Arguments:
         username = String()
         password = String()
         provider = String()
@@ -53,7 +54,7 @@ class AuthMutation(Mutation):
 
 
 class ProtectedMutation(Mutation):
-    class Arguments(object):
+    class Arguments:
         token = String()
 
     message = Field(ProtectedUnion)
@@ -66,7 +67,7 @@ class ProtectedMutation(Mutation):
 
 
 class RefreshMutation(Mutation):
-    class Arguments(ob
+    class Arguments:
         token = String()
 
     new_token = String()
