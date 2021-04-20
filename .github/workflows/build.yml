@@ -28,6 +28,9 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [ 3.6, 3.7, 3.8]
 
     steps:
     - uses: actions/checkout@v1
@@ -41,10 +44,10 @@ jobs:
         echo "VERSION_CHANGE=0" >> $GITHUB_ENV
         echo "CONFIG_FILE=${GITHUB_WORKSPACE}/config-sample.cfg" >> $GITHUB_ENV
 
-    - name: Set up Python 3.7
-      uses: actions/setup-python@v1
+    - name: Set up Python
+      uses: actions/setup-python@v2
       with:
-        python-version: 3.7
+        python-version: ${{ matrix.python-version }}
 
     - name: Install dependencies
       run: |

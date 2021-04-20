@@ -4,11 +4,11 @@ from sqlalchemy.exc import *
 from flask_fixtures.loaders import JSONLoader
 from flask_fixtures import load_fixtures
 import click
-from app import (app, db)
+from app import (app, DB)
 
 @app.cli.command('initdb')
 def init_db():
-    db.create_all()
+    DB.create_all()
 
 
 @app.cli.command('seed')
@@ -24,7 +24,7 @@ def seed_command(seed_dir):
     for fixture_file in glob(join(base_dir, seed_dir, '*.json')):
         fixtures = JSONLoader().load(fixture_file)
         try:
-            load_fixtures(db, fixtures)
+            load_fixtures(DB, fixtures)
         except IntegrityError as err:
             print('It appears, {}, was already processed'.format(
                 fixture_file))

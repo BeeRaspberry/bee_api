@@ -1,126 +1,131 @@
 from unittest import TestCase
 import pytest
-from app import (db, app)
+from app import DB
 from app.database import (Country, StateProvince, Location, HiveData, Hive,
                           User, Role)
 
 
-@pytest.fixture(scope='module')
-def init_db():
-    from os.path import (abspath, dirname, join)
-    from glob import glob
-    from flask_fixtures.loaders import JSONLoader
-    from flask_fixtures import load_fixtures
+#@pytest.fixture(scope='module')
+#@pytest.mark.usefixtures("init_database")
+#def new_location(init_database):
+#    def _add_location(street_address, city, postal_code, stateProvinceId):
+#        temp = Location(street_address=street_address,
+#                        city=city,
+#                        postal_code=postal_code,
+#                        stateProvinceId=stateProvinceId)
+#        init_database.session.add(temp)
+#        init_database.session.commit()
+#        return init_database.session.query(Location).filter_by(
+#            postal_code=postal_code).one()
+#
+#    return _add_location
+#
+#
+#@pytest.fixture(scope='module')
+#@pytest.mark.usefixtures("init_database")
+#def new_role(init_database):
+#    def _add_role(name, description):
+#        temp = Role(name=name, description=description)
+#        DB.session.add(temp)
+#        DB.session.commit()
+#        return DB.session.query(Role).filter_by(name=name).one()
+#
+#    return _add_role
+#
+#
+#@pytest.fixture(scope='module')
+#@pytest.mark.usefixtures('new_location', 'new_role')
+#def new_user(new_location, new_role):
+#    return User(email='bee.mine@bee.org', password='password',
+#                firstName='Queen', lastName='Bee', phoneNumber='1234567890',
+#                location=new_location, roles=new_role)
+#
+#
+#@pytest.fixture(scope='module')
+#@pytest.mark.usefixtures('new_location', 'new_user')
+#def new_hive(new_location, new_user):
+#    return Hive(location=new_location, owner=new_user)
+#
+#
+@pytest.mark.usefixtures("init_database")
+class TestCountryTable(TestCase):
+    '''Test Country Table'''
+    def test_country_all(self):
+        '''Test Query gets the correct number of rows'''
+        result = DB.session.query(Country).all()
+        self.assertEqual(len(result), 3, "Country List not equal 3")
 
-    print('Database location: {}'.format(app.config['SQLALCHEMY_DATABASE_URI']))
-    db.drop_all()
-    db.create_all()
+    def test_country_short_name(self):
+        '''Test Query to check for Short Name'''
+        result = DB.session.query(Country).filter_by(name="Canada").first()
+        self.assertEqual(result.shortName, "CA")
 
-    base_dir = abspath(dirname(__file__))
-
-    for fixture_file in glob(join(base_dir, '..', 'fixtures', '*.json')):
-        fixtures = JSONLoader().load(fixture_file)
-        load_fixtures(db, fixtures)
-
-    return db
+    def test_new_country(self):
+        self.assertIsNotNone(Country(name='Great Britain', shortName="GB"))
 
 
-@pytest.fixture
-def new_location(init_db):
-    def _add_location(street_address, city, postal_code, stateProvinceId):
-        temp = Location(street_address=street_address,
-                        city=city,
-                        postal_code=postal_code,
-                        stateProvinceId=stateProvinceId)
-        init_db.session.add(temp)
-        init_db.session.commit()
-        return init_db.session.query(Location).filter_by(
-            postal_code=postal_code).one()
+@pytest.mark.usefixtures("init_database")
+class TestStateProvinceTable(TestCase):
+    '''Test State Province Table'''
+    def test_state_province_all(self):
+        '''Test Query gets the correct number of rows'''
+        result = DB.session.query(StateProvince).all()
+        self.assertGreaterEqual(len(result), 50)
 
-    return _add_location
+    def test_state_province_abbreviation(self):
+        '''Test Query to check for State Abbreviation'''
+        result = DB.session.query(StateProvince).filter_by(
+            name="Washington").first()
+        self.assertEqual(result.abbreviation, "WA")
 
-
-@pytest.fixture(scope='module')
-def new_role(init_db):
-    def _add_role(name, description):
-        temp = Role(name=name, description=description)
-        init_db.session.add(temp)
-        init_db.session.commit()
-        return init_db.session.query(Role).filter_by(name=name).one()
-
-    return _add_role
+    def test_new_state_province(self):
+        country = DB.session.query(Country).filter_by(name="Canada").first()
+        self.assertIsNotNone(StateProvince(name="Mickey Land",
+                             abbreviation="ML",
+                             country_id=country.id))
 
 
-@pytest.fixture(scope='module')
-@pytest.mark.usefixtures('new_location', 'new_role')
-def new_user(new_location, new_role):
-    return User(email='bee.mine@bee.org', password='password',
-                firstName='Queen', lastName='Bee', phoneNumber='1234567890',
-                location=new_location, roles=new_role)
+@pytest.mark.usefixtures("init_database")
+class TestLocationTable(TestCase):
+    '''Test Location Table'''
+    def test_location_all(self):
+        '''Test Query gets the correct number of rows'''
+        result = DB.session.query(Location).all()
+        self.assertGreaterEqual(len(result), 1)
+
+    def test_location_city(self):
+        ''' Test Query of City'''
+        location = DB.session.query(Location).filter_by(city="Boston").first()
+        self.assertEqual(location.stateProvinceId, 21)
+
+    def test_new_location(self):
+        ''' Test new Location '''
+        self.assertIsNotNone(Location(city="Orleans",
+                             street_address="One Main St.",
+                             stateProvinceId=10,
+                             postal_code="12345"))
 
 
-@pytest.fixture(scope='module')
-@pytest.mark.usefixtures('new_location', 'new_user')
-def new_hive(new_location, new_user):
-    return Hive(location=new_location, owner=new_user)
+@pytest.mark.usefixtures("init_database")
+class TestHiveTable(TestCase):
+    '''Test Hive Table'''
+    def test_new_hive(self):
+        '''Test New Hive'''
+        new_location = Location(street_address="street_address",
+                                city="Boston",
+                                postal_code="23456",
+                                stateProvinceId=11)
+        new_user = User(email="test@test.com")
+        new_hive = Hive(owner=new_user, location=new_location)
+        DB.session.add(new_location)
+        DB.session.add(new_user)
+        DB.session.add(new_hive)
+        DB.session.commit()
 
-
-def test_country_all(init_db):
-    result = init_db.session.query(Country).all()
-    TestCase().assertGreaterEqual(len(result), 3)
-
-def test_country_short_name(init_db):
-    result = init_db.session.query(Country).filter_by(name="Canada").one()
-    TestCase().assertEqual(result.shortName, "CA")
-
-def test_new_country(init_db):
-    TestCase().assertIsNotNone(Country(name='Great Britain', shortName="GB"))
-
-def test_state_province_all(init_db):
-    result = init_db.session.query(StateProvince).all()
-    TestCase().assertGreaterEqual(len(result), 50)
-
-def test_state_province_abbreviation(init_db):
-    result = init_db.session.query(StateProvince).filter_by(
-        name="Washington").one()
-    TestCase().assertEqual(result.abbreviation, "WA")
-
-def test_new_state_province(init_db):
-    country = init_db.session.query(Country).filter_by(name="Canada").one()
-    TestCase().assertIsNotNone(StateProvince(name="Mickey Land",
-                                   abbreviation="ML",
-                                   country=country))
-
-def test_location_all(init_db):
-    result = init_db.session.query(Location).all()
-    TestCase().assertGreaterEqual(len(result), 1)
-
-def test_location_city(init_db):
-    location = init_db.session.query(Location).filter_by(city="Boston").one()
-    TestCase().assertEqual(location.stateProvinceId, 21)
-
-def test_new_location(init_db):
-    TestCase().assertIsNotNone(Location(city="Orleans",
-                                    street_address="One Main St.",
-                                    stateProvinceId=10,
-                                    postal_code="12345"))
-
-def test_new_hive(init_db):
-    new_location = Location(street_address="street_address",
-                            city="Boston",
-                            postal_code="23456",
-                            stateProvinceId=11)
-    new_user = User(email="test@test.com")
-    new_hive = Hive(owner=new_user, location=new_location)
-    init_db.session.add(new_location)
-    init_db.session.add(new_user)
-    init_db.session.add(new_hive)
-    init_db.session.commit()
-
-    result = init_db.session.query(Hive).all()
-    TestCase().assertEqual(len(result), 1)
-    TestCase().assertEqual(result[0].location, new_location)
-    TestCase().assertEqual(result[0].owner, new_user)
+        result = DB.session.query(Hive).all()
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0].location, new_location)
+        self.assertEqual(result[0].owner, new_user)
 
 """
 def test_new_role(new_role):

@@ -4,21 +4,22 @@ from sqlalchemy import (Column, Integer, String, Numeric, BOOLEAN,
 from sqlalchemy.orm import (relationship, backref)
 from flask_security import (UserMixin, RoleMixin)
 
-from app import db
+from app import DB
 
 
-class Country(db.Model):
+class Country(DB.Model):
     __tablename__ = 'country'
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(200))
     shortName = Column(String(10))
+#    state_provinces = relationship("StateProvince", backref="countries")
 
 
-class StateProvince(db.Model):
+class StateProvince(DB.Model):
     __tablename__ = 'stateProvince'
     id = Column(Integer, primary_key=True, autoincrement=True)
-    countryId = Column(Integer, ForeignKey('country.id'))
-    country = relationship('Country', backref='stateProvinces')
+    country_id = Column(Integer, ForeignKey("country.id"))
+    countries = relationship("Country", backref="state_provinces")
     name = Column(String(200))
     abbreviation = Column(String(10))
 
@@ -26,7 +27,7 @@ class StateProvince(db.Model):
         return self.name
 
 
-class Location(db.Model):
+class Location(DB.Model):
     __tablename__ = 'location'
     id = Column(Integer, primary_key=True, autoincrement=True)
     street_address = Column(String(200))
@@ -36,7 +37,7 @@ class Location(db.Model):
     state_province = relationship('StateProvince', backref='location')
 
 
-class Hive(db.Model):
+class Hive(DB.Model):
     __tablename__ = "hive"
     id = Column(Integer, primary_key=True)
     ownerId = Column(Integer, ForeignKey('user.id'))
@@ -49,7 +50,7 @@ class Hive(db.Model):
 #    door_open = Column(Boolean, server_default=True)
 
 
-class HiveData(db.Model):
+class HiveData(DB.Model):
     __tablename__ = "hiveData"
     id = Column(Integer, primary_key=True)
     hiveId = Column(Integer, ForeignKey('hive.id'))
@@ -61,21 +62,21 @@ class HiveData(db.Model):
     outdoor = Column(BOOLEAN)
 
 
-class RolesUsers(db.Model):
+class RolesUsers(DB.Model):
     __tablename__ = 'roles_users'
     id = Column(Integer(), primary_key=True)
     user_id = Column('user_id', Integer(), ForeignKey('user.id'))
     role_id = Column('role_id', Integer(), ForeignKey('role.id'))
 
 
-class Role(db.Model, RoleMixin):
+class Role(DB.Model, RoleMixin):
     __tablename__ = 'role'
     id = Column(Integer(), primary_key=True)
     name = Column(String(80), unique=True)
     description = Column(String(255))
 
 
-class User(db.Model, UserMixin):
+class User(DB.Model, UserMixin):
     __tablename__ = 'user'
     id = Column(Integer, primary_key=True)
     email = Column(String(255), unique=True)
@@ -103,7 +104,7 @@ class User(db.Model, UserMixin):
 #        self.password = generate_password_hash(password)
 
 
-class BlacklistToken(db.Model):
+class BlacklistToken(DB.Model):
     """
     Token Model for storing JWT tokens
     """

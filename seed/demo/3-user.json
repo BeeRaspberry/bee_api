@@ -1,6 +1,6 @@
 [
   {
-    "table": "user",
+    "model": "app.database.User",
     "records": [
       {
         "id": 1,

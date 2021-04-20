@@ -1,6 +1,6 @@
 [
   {
-    "table": "location",
+    "model": "app.database.Location",
     "records": [
       {
         "street_address": "123 Main St.",
