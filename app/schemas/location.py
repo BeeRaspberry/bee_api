@@ -57,7 +57,7 @@ class CreateLocation(Mutation):
         input = CreateLocationInput(required=True)
 
     def mutate(self, info, input_value):
-        data = utils.input_to_dictionary(input_value)
+        data = input_to_dictionary(input_value)
         state_data = {'name': input['state_province']}
         state_province = check_state_province(state_data)
         data['state_province'] = state_province
