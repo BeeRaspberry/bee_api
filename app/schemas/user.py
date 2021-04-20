@@ -1,13 +1,13 @@
 import graphene
 from graphene import (Mutation, Connection, InputObjectType, String,
-                      Field, Boolean, Node)
+                      Field, Boolean, Node, ID)
 from graphene_sqlalchemy import (SQLAlchemyObjectType)
 from flask_graphql_auth import (create_access_token,
                                 create_refresh_token)
 from app.database import (User as UserModel,
                           Role, RolesUsers)
 from app import DB
-from helpers import utils
+from helpers.utils import input_to_dictionary
 from .helpers import TotalCount
 from app.filters import FilterConnectionField
 
@@ -100,7 +100,7 @@ class CreateUser(Mutation):
         input = CreateUserInput(required=True)
 
     def mutate(self, info, input_value):
-        data = utils.input_to_dictionary(input_value)
+        data = input_to_dictionary(input_value)
 
         user = UserModel(**data)
         DB.session.add(user)
@@ -110,8 +110,8 @@ class CreateUser(Mutation):
 
 
 class UpdateUserInput(InputObjectType, UserAttribute):
-    id = graphene.ID(required=True,
-                     description="Global Id of the User.")
+    id = ID(required=True,
+            description="Global Id of the User.")
 
 
 class UpdateUser(Mutation):
@@ -122,7 +122,7 @@ class UpdateUser(Mutation):
         input = UpdateUserInput(required=True)
 
     def mutate(self, info, input_value):
-        data = utils.input_to_dictionary(input_value)
+        data = input_to_dictionary(input_value)
 
         user = DB.session.query(UserModel).\
             filter_by(id=data['id'])
@@ -141,7 +141,7 @@ class DeleteUser(Mutation):
         input = UpdateUserInput(required=True)
 
     def mutate(self, info, input_value):
-        data = utils.input_to_dictionary(input_value)
+        data = input_to_dictionary(input_value)
 
         user = DB.session.query(UserModel).filter_by(id=data['id'])
         user.delete()

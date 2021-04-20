@@ -54,7 +54,7 @@ class CreateCountry(Mutation):
         input = CreateCountryInput(required=True)
 
     def mutate(self, info, input_value):
-        data = utils.input_to_dictionary(input_value)
+        data = input_to_dictionary(input_value)
 
         country = CountryModel(**data)
         DB.session.add(country)
@@ -75,7 +75,7 @@ class UpdateCountry(Mutation):
         input = UpdateCountryInput(required=True)
 
     def mutate(self, info, input_value):
-        data = utils.input_to_dictionary(input_value)
+        data = input_to_dictionary(input_value)
 
         country = DB.session.query(CountryModel).filter_by(id=data['id'])
         country.update(data)
@@ -92,7 +92,7 @@ class DeleteCountry(Mutation):
         input = UpdateCountryInput(required=True)
 
     def mutate(self, info, input_value):
-        data = utils.input_to_dictionary(input_value)
+        data = input_to_dictionary(input_value)
 
         country = DB.session.query(CountryModel).filter_by(id=data['id'])
         country.delete()

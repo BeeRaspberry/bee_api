@@ -4,7 +4,7 @@ from graphene import (Mutation, Connection, InputObjectType, String,
 from graphene_sqlalchemy import (SQLAlchemyObjectType)
 from app.database import StateProvince as StateProvinceModel
 from app import DB
-from helpers import utils
+from helpers.utils import input_to_dictionary
 from .helpers import TotalCount
 from app.filters import FilterConnectionField
 
@@ -55,7 +55,7 @@ class CreateStateProvince(Mutation):
         input = CreateStateProvinceInput(required=True)
 
     def mutate(self, info, input_value):
-        data = utils.input_to_dictionary(input_value)
+        data = input_to_dictionary(input_value)
 
         return CreateStateProvince(StateProvince=check_state_province(data))
 
@@ -75,7 +75,7 @@ class UpdateStateProvince(Mutation):
         input = UpdateStateProvinceInput(required=True)
 
     def mutate(self, info, input_value):
-        data = utils.input_to_dictionary(input_value)
+        data = input_to_dictionary(input_value)
 
         state_province = DB.session.query(StateProvinceModel).\
             filter_by(id=data['id'])
@@ -94,7 +94,7 @@ class DeleteStateProvince(Mutation):
         input = UpdateStateProvinceInput(required=True)
 
     def mutate(self, info, input_value):
-        data = utils.input_to_dictionary(input_value)
+        data = input_to_dictionary(input_value)
 
         province = DB.session.query(StateProvinceModel).filter_by(id=data['id'])
         province.delete()

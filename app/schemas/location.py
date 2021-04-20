@@ -4,7 +4,7 @@ from graphene import (Mutation, Connection, InputObjectType, String,
 from graphene_sqlalchemy import (SQLAlchemyObjectType)
 from app.database import Location as LocationModel
 from app import DB
-from helpers import utils
+from helpers.utils import input_to_dictionary
 from .helpers import TotalCount
 from app.filters import FilterConnectionField
 from .state_province import check_state_province
@@ -79,7 +79,7 @@ class UpdateLocation(Mutation):
         input = UpdateLocationInput(required=True)
 
     def mutate(self, info, input_value):
-        data = utils.input_to_dictionary(input_value)
+        data = input_to_dictionary(input_value)
 
         location = DB.session.query(LocationModel).\
             filter_by(id=data['id'])
@@ -98,7 +98,7 @@ class DeleteLocation(Mutation):
         input = UpdateLocationInput(required=True)
 
     def mutate(self, info, input_value):
-        data = utils.input_to_dictionary(input_value)
+        data = input_to_dictionary(input_value)
 
         location = DB.session.query(LocationModel).filter_by(id=data['id'])
         location.delete()
