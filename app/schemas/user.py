@@ -1,4 +1,3 @@
-import graphene
 from graphene import (Mutation, Connection, InputObjectType, String,
                       Field, Boolean, Node, ID)
 from graphene_sqlalchemy import (SQLAlchemyObjectType)

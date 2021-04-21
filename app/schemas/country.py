@@ -68,7 +68,7 @@ class UpdateCountryInput(InputObjectType, CountryAttribute):
 
 
 class UpdateCountry(Mutation):
-    Country = Field(lambda: CountryNode, 
+    Country = Field(lambda: CountryNode,
                     description="Country updated by this mutation.")
 
     class Arguments:
@@ -80,7 +80,8 @@ class UpdateCountry(Mutation):
         country = DB.session.query(CountryModel).filter_by(id=data['id'])
         country.update(data)
         DB.session.commit()
-        country = DB.session.query(CountryModel).filter_by(id=data['id']).first()
+        country = DB.session.query(CountryModel).filter_by(
+            id=data['id']).first()
 
         return UpdateCountry(country=country)
 

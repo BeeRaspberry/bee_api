@@ -1,5 +1,3 @@
-import graphene
-
 from graphene import (ObjectType, String, Union, Mutation, Field)
 from app import app
 from database import User
