@@ -1,4 +1,4 @@
-FROM python:3.8.5-slim AS container-image
+FROM python:3.9.4-slim AS container-image
 
 RUN apt-get update && apt-get install --no-install-recommends -y \
     gunicorn \
