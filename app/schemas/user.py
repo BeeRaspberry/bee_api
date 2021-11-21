@@ -1,16 +1,49 @@
 from graphene import (Mutation, Connection, InputObjectType, String,
-                      Field, Boolean, Node, ID)
+                      Field, Boolean, Node, ID, Union, ObjectType)
 from graphene_sqlalchemy import (SQLAlchemyObjectType)
 from flask_graphql_auth import (create_access_token,
-                                create_refresh_token)
+                                create_refresh_token,
+                                get_jwt_identity,
+                                AuthInfoField,
+                                mutation_jwt_refresh_token_required,
+                                GraphQLAuth)
 from app.database import (User as UserModel,
                           Role, RolesUsers)
-from app import DB
+from app import (APP, DB)
 from helpers.utils import input_to_dictionary
 from .helpers import TotalCount
 from app.filters import FilterConnectionField
 
+auth = GraphQLAuth(APP)
+
 user_claims = {"message": "VERI TAS LUX MEA"}
+
+
+class MessageField(ObjectType):
+    message = String()
+
+
+class ProtectedUnion(Union):
+    class Meta:
+        types = (MessageField, AuthInfoField)
+
+    @classmethod
+    def resolve_type(cls, instance, info):
+        return type(instance)
+
+
+class RefreshMutation(Mutation):
+    class Arguments(object):
+        token = String()
+
+    new_token = String()
+
+    @classmethod
+    @mutation_jwt_refresh_token_required
+    def mutate(self, _, info):
+        current_user = get_jwt_identity()
+        return RefreshMutation(new_token=create_access_token(
+            identity=current_user, user_claims=user_claims))
 
 
 class LoginUser(Mutation):
@@ -34,8 +67,6 @@ class LoginUser(Mutation):
         if 'fb' in provider:
             print('need to implement Facebook signin')
 
-        print(user.password)
-        print(password)
         if not user or user.password != password:
             raise Exception('Invalid Credentials')
 
@@ -51,13 +82,17 @@ class LoginUser(Mutation):
         else:
             user_role = role.name
 
-        return LoginUser(access_token=create_access_token(email,
-                         user_claims=user_claims),
-                         refresh_token=create_refresh_token(email,
-                         user_claims=user_claims),
+        print('before create access token')
+        access_token = create_access_token(email, user_claims=user_claims)
+        refresh_token = create_refresh_token(email, user_claims=user_claims)
+        print('access token: {}'.format(access_token))
+        print('refresh token: {}'.format(refresh_token))
+
+        return LoginUser(access_token=access_token,
+                         refresh_token=refresh_token,
                          role=user_role,
                          name=user_name
-                        )
+                         )
 
 
 class UserAttribute:

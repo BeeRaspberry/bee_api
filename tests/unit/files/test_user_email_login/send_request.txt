@@ -1,0 +1,8 @@
+mutation loginUser($email: String, $password: String, $provider: String) {
+  loginUser(email: $email, password: $password, provider: $provider) {
+    accessToken
+    refreshToken
+    role
+    name
+  }
+}

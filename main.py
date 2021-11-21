@@ -4,14 +4,14 @@ from sqlalchemy.exc import *
 from flask_fixtures.loaders import JSONLoader
 from flask_fixtures import load_fixtures
 import click
-from app import (app, DB)
+from app import (APP, DB)
 
-@app.cli.command('initdb')
+@APP.cli.command('initdb')
 def init_db():
     DB.create_all()
 
 
-@app.cli.command('seed')
+@APP.cli.command('seed')
 @click.argument('seed_dir', default='seed')
 def seed_command(seed_dir):
     """Load seed data"""
@@ -35,4 +35,4 @@ def seed_command(seed_dir):
 
 
 if __name__ == '__main__':
-    app.run()
+    APP.run()

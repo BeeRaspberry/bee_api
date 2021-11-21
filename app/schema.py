@@ -1,12 +1,6 @@
 import graphene
-from graphene import (relay, Mutation, String, Field, Node, ObjectType,
-                      Union)
-from flask_graphql_auth import (AuthInfoField, GraphQLAuth, get_jwt_identity,
-                                get_raw_jwt, create_access_token,
-                                query_jwt_required,
-                                mutation_jwt_refresh_token_required,
-                                mutation_jwt_required)
-from app import app
+from graphene import (relay, Mutation, String, Field, Node, ObjectType)
+from flask_graphql_auth import mutation_jwt_required
 from .schemas.country import (CountryNode, CountryConnection, CreateCountry,
                               DeleteCountry, UpdateCountry)
 from .schemas.state_province import (StateProvinceNode, CreateStateProvince,
@@ -15,33 +9,16 @@ from .schemas.state_province import (StateProvinceNode, CreateStateProvince,
 from .schemas.location import (LocationNode, LocationConnection,
                                CreateLocation, UpdateLocation, DeleteLocation)
 from .schemas.user import (UserNode, UserConnection, CreateUser, UpdateUser,
-                           DeleteUser, LoginUser)
+                           DeleteUser, LoginUser, ProtectedUnion, MessageField)
 from .filters import (FilterConnectionField)
 
-__all__ = ['CreateCountry', 'UpdateCountry', 'CreateLocation',
-           'UpdateLocation', 'CreateStateProvince', 'UpdateStateProvince',
-           'LoginUser']
-
-auth = GraphQLAuth(app)
-user_claims = {"message": "VERI TAS LUX MEA"}
+#__all__ = ['CreateCountry', 'UpdateCountry', 'CreateLocation',
+#           'UpdateLocation', 'CreateStateProvince', 'UpdateStateProvince',
+#           'LoginUser']
 
 
 def check_user(data):
     return True
-
-
-class MessageField(ObjectType):
-    message = String()
-
-
-class ProtectedUnion(Union):
-    class Meta:
-        types = (MessageField, AuthInfoField)
-
-    @classmethod
-    def resolve_type(cls, instance, info):
-        return type(instance)
-
 
 
 class ProtectedMutation(Mutation):
@@ -55,20 +32,6 @@ class ProtectedMutation(Mutation):
     def mutate(cls, _, info):
         return ProtectedMutation(message=MessageField(
                                  message="Protected mutation works"))
-
-
-class RefreshMutation(Mutation):
-    class Arguments(object):
-        token = String()
-
-    new_token = String()
-
-    @classmethod
-    @mutation_jwt_refresh_token_required
-    def mutate(self, _, info):
-        current_user = get_jwt_identity()
-        return RefreshMutation(new_token=create_access_token(
-            identity=current_user, user_claims=user_claims))
 
 
 class Query(ObjectType):
@@ -103,4 +66,4 @@ class Mutation(ObjectType):
 #    checkAuth = CheckAuth.Field()
 
 
-schema = graphene.Schema(query=Query, mutation=Mutation)
+SCHEMA = graphene.Schema(query=Query, mutation=Mutation)

@@ -19,27 +19,24 @@ if not exists(config_file):
     print('Config file, {}, not found ... exiting'.format(config_file))
     sys.exit(9)
 
-app = Flask(__name__)
+APP = Flask(__name__)
 
-app.config.from_pyfile(config_file)
+APP.config.from_pyfile(config_file)
 
-print('Database location: {}'.format(app.config['SQLALCHEMY_DATABASE_URI']))
+print('Database location: {}'.format(APP.config['SQLALCHEMY_DATABASE_URI']))
 
-DB = SQLAlchemy(app)
+DB = SQLAlchemy(APP)
 
-migrate = Migrate(app, DB)
+migrate = Migrate(APP, DB)
 
-CORS(app)
-# paranoid = Paranoid(app)
+CORS(APP)
+# paranoid = Paranoid(APP)
 # paranoid.redirect_view = '/'
 #
 #
 # if not app.debug and not app.testing and not app.config['SSL_DISABLE']:
 #    from flask.ext.sslify import SSLify
-#    SSLify(app)
+#    SSLify(APP)
 #
-# user_datastore = SQLAlchemyUserDatastore(db, User, Role)
-# security = Security(app, user_datastore,
-#                    login_form=UserLoginForm)
 
 from app import routes
