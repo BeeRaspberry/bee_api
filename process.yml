@@ -1,0 +1,78 @@
+# Orb 'circleci/python@1.2.0' resolved to 'circleci/python@1.2.0'
+version: 2
+jobs:
+  build:
+    docker:
+    - image: cimg/python:3.8
+    steps:
+    - checkout
+    - restore_cache:
+        keys:
+        - -pypi-v1-{{ .Branch }}-{{ checksum "~/project/requirements.txt" }}-{{ checksum "/home/circleci/.pyenv/version" }}-
+    - run:
+        command: "pip install -r requirements.txt \n"
+        name: Install dependencies with pip using project requirements.txt
+        working_directory: ~/project
+    - save_cache:
+        key: -pypi-v1-{{ .Branch }}-{{ checksum "~/project/requirements.txt" }}-{{ checksum "/home/circleci/.pyenv/version" }}-
+        paths:
+        - /home/circleci/.cache/pip
+        - /home/circleci/.pyenv/versions/
+        - /home/circleci/.local/lib/
+    - restore_cache:
+        keys:
+        - -pypi-v1-{{ .Branch }}-{{ checksum "~/project/requirements.txt" }}-{{ checksum "/home/circleci/.pyenv/version" }}-
+    - run:
+        command: "pip install -r requirements.txt \n"
+        name: Install dependencies with pip using project requirements.txt
+        working_directory: ~/project
+    - save_cache:
+        key: -pypi-v1-{{ .Branch }}-{{ checksum "~/project/requirements.txt" }}-{{ checksum "/home/circleci/.pyenv/version" }}-
+        paths:
+        - /home/circleci/.cache/pip
+        - /home/circleci/.pyenv/versions/
+        - /home/circleci/.local/lib/
+    - run:
+        command: |
+          pip install -r requirements.txt pytest
+        name: Install dependencies with pip using project requirements.txt
+        working_directory: ~/project
+    - run:
+        command: |
+          pytest --version
+        name: Test
+workflows:
+  main:
+    jobs:
+    - build
+  version: 2
+
+# Original config.yml file:
+# version: 2.1
+# 
+# orbs:
+#   python: circleci/python@1.2.0
+# 
+# jobs:
+#   build:
+#     executor: python/default
+#     steps:
+#       - checkout
+#       - python/install-packages:
+#           pkg-manager: pip
+#       - python/install-packages:
+#           pip-dependency-file: requirements.txt
+#           pkg-manager: pip
+#       - python/install-packages:
+#           args: pytest
+#           pkg-manager: pip
+#           pypi-cache: false
+#       - run:
+#           command: |
+#             pytest --version
+#           name: Test
+# 
+# workflows:
+#   main:
+#     jobs:
+#       - build
