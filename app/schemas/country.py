@@ -1,5 +1,5 @@
 import graphene
-from graphene import (Mutation, Connection, InputObjectType, String,
+from graphene import (ID, Mutation, Connection, InputObjectType, String,
                       Field, Boolean, Node)
 from graphene_sqlalchemy import (SQLAlchemyObjectType)
 from app.database import Country as CountryModel
@@ -22,7 +22,7 @@ def check_country(data):
 
 class CountryAttribute:
     name = String(description="Name of the Country.")
-    shortName = String(description="Country Abbreviation.")
+    short_name = String(description="Country Abbreviation.")
 
 
 class CountryNode(SQLAlchemyObjectType):
@@ -47,20 +47,27 @@ class CreateCountryInput(InputObjectType, CountryAttribute):
 
 
 class CreateCountry(Mutation):
-    country = Field(lambda: CountryNode,
-                    description="Country created by this mutation.")
-
     class Arguments:
-        input = CreateCountryInput(required=True)
+        name = String(description="Name of the Country.", required=True)
+        short_name = String(description="Country Abbreviation.", required=True)
 
-    def mutate(self, info, input_value):
-        data = input_to_dictionary(input_value)
+    ok = Boolean()
+    Country = Field(CountryNode)
+    message = String()
 
-        country = CountryModel(**data)
-        DB.session.add(country)
-        DB.session.commit()
+    def mutate(self, info, name, short_name):
+        ok = True
+        message = "Successfully Added"
 
-        return CreateCountry(country=country)
+        country = CountryModel(name=name, shortName=short_name)
+        try:
+            DB.session.add(country)
+            DB.session.commit()
+        except Exception as e:
+            message = e
+            ok = False
+        
+        return CreateCountry(Country=country, ok=ok, message=message)
 
 
 class UpdateCountryInput(InputObjectType, CountryAttribute):
@@ -68,22 +75,32 @@ class UpdateCountryInput(InputObjectType, CountryAttribute):
 
 
 class UpdateCountry(Mutation):
-    Country = Field(lambda: CountryNode,
-                    description="Country updated by this mutation.")
-
     class Arguments:
-        input = UpdateCountryInput(required=True)
+        id = ID(description="Country Id.", required=True)
+        name = String(description="Name of the Country.")
+        short_name = String(description="Country Abbreviation.")
 
-    def mutate(self, info, input_value):
-        data = input_to_dictionary(input_value)
+    ok = Boolean()
+    Country = Field(CountryNode)
+    message = String()
 
-        country = DB.session.query(CountryModel).filter_by(id=data['id'])
-        country.update(data)
-        DB.session.commit()
-        country = DB.session.query(CountryModel).filter_by(
-            id=data['id']).first()
+    def mutate(self, info, id, name=None, short_name=None):
+        ok = True
+        message = "Successfully Updated"
+        result = None
 
-        return UpdateCountry(country=country)
+        try:
+            query = CountryNode.get_query(info)
+            result = query.filter(CountryModel.id==id)
+            if short_name:
+                result.shortName = short_name
+            if name:
+                result.name = name
+            DB.session.commit()
+        except Exception as e:
+            message = e
+            ok = False
+        return UpdateCountry(ok=ok, Country=result, message=message)
 
 
 class DeleteCountry(Mutation):

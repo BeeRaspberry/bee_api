@@ -81,6 +81,10 @@ class Query(ObjectType):
     all_state_province = FilterConnectionField(StateProvinceConnection)
     all_location = FilterConnectionField(LocationConnection)
     all_user = FilterConnectionField(UserConnection)
+    getStateProvinceCountry = Field(lambda: StateProvinceNode, country=String())
+    def resolve_getStateProvinceCountry(parent, info, country):
+        query = StateProvinceNode.get_query(info)
+        return query.filter(country_id==country).first()
 #    hivesList = SQLAlchemyConnectionField(Hive)
 
 
