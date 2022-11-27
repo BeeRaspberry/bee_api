@@ -1,6 +1,6 @@
 # The flow is:
 #  - all branches:
-#      - install dependencices
+#      - install dependencies
 #      - lint code
 #      - run tests
 #      - publish test results
@@ -12,8 +12,7 @@
 #      - push the docker image to Docker Hub
 #      - notify 'helm' repo of the changes
 #     - '.github/workflows/**'
-
-name: build
+name: Build and Package
 
 on: 
   push:
