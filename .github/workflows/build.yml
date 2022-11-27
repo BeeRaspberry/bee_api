@@ -20,7 +20,7 @@ on:
     - 'README.md'
     - 'hooks/**'
     - 'tests/**'
-    - '.github/workflows/**'
+#    - '.github/workflows/**'
 
 jobs:    
   build_test:
