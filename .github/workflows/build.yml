@@ -51,10 +51,8 @@ jobs:
 
     - name: Generate reports
       run: |
-        coverage report
-        coverage xml -o test-results/coverage.xml
-        coverage html
-
+]       coverage xml -o test-results/coverage.xml
+\
     - name: Publish Report
       uses: codacy/codacy-coverage-reporter-action@v1
       with:
