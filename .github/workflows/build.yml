@@ -11,6 +11,7 @@
 #        and pushes the file to master
 #      - push the docker image to Docker Hub
 #      - notify 'helm' repo of the changes
+#     - '.github/workflows/**'
 
 name: build
 
@@ -20,7 +21,6 @@ on:
     - 'README.md'
     - 'hooks/**'
     - 'tests/**'
-#    - '.github/workflows/**'
 
 jobs:    
   build_test:
