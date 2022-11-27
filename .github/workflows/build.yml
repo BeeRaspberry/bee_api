@@ -1,17 +1,3 @@
-# The flow is:
-#  - all branches:
-#      - install dependencies
-#      - lint code
-#      - run tests
-#      - publish test results
-#      - build docker image
-#      - scan docker image for vulnerabilities
-#  - master branch: Includes all the steps above
-#      - checks to see if VERSION file was increment, if not increments
-#        and pushes the file to master
-#      - push the docker image to Docker Hub
-#      - notify 'helm' repo of the changes
-#     - '.github/workflows/**'
 name: Build and Package
 
 on: 
